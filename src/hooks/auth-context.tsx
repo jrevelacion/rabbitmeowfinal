@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { User, authService } from '@/lib/auth';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { AuthContext, AuthContextType } from '@/contexts/auth';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Home, Film, Tv, TrendingUp, Menu, X, Keyboard, ArrowRight, History, UserCircle, LogIn, UserPlus, Volleyball } from 'lucide-react';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
 import { searchMedia } from '@/utils/api';
 import { Media } from '@/utils/types';

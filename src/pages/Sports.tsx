@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import SportMatchGrid from '@/components/SportMatchGrid';
+import SportMatchGrid from '@/components/SportsMatchGrid';
 import PageTransition from '@/components/PageTransition';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Sport } from '@/utils/sports-types';
@@ -13,7 +13,7 @@ import {
   getTodayMatches,
   getMatchesBySport,
 } from '@/utils/sports-api';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useUserPreferences } from '@/hooks/user-preferences';
 import Ads from '@/components/Ads';
 import { Search, Radio, Sparkles, CalendarDays, Activity } from 'lucide-react';
