@@ -144,7 +144,7 @@ const TVShows = () => {
           <div className="container px-4 py-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
               <div className="flex items-center gap-3 pt-10">
-                <h1 className="text-3xl font-bold text-white"></h1>
+                <h1 className="text-3xl font-bold text-white">TV Shows</h1>
               </div>
               <div className="flex items-center gap-4 pt-6">
                 <Select value={sortBy} onValueChange={setSortBy}>
