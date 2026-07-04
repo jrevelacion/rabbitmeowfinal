@@ -1,6 +1,0 @@
-name = "rabbitmeowfinal"
-pages_build_output_dir = "dist"
-
-[vars]
-# Add your environment variables here
-# VITE_FIREBASE_MEASUREMENT_ID = "your-id"
