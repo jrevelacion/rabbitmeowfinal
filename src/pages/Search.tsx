@@ -28,7 +28,7 @@ import {
   PaginationNext,
 } from "@/components/ui/pagination";
 import { Search as SearchIcon, X, Filter, ChevronDown } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import SearchSuggestions from '@/components/SearchSuggestions';
 import Ads from '@/components/Ads';
 import { useUserPreferences } from '@/hooks/user-preferences';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { APIMatch } from '@/utils/sports-types';
-import SportMatchCard from './SportsMatchCard';
+import SportMatchCard from './SportMatchCard';
 import { motion, Variants } from 'framer-motion';
 
 interface SportMatchGridProps {

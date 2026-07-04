@@ -148,7 +148,7 @@ const Movies = () => {
         <main className="flex-1 container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1">
-              <h1 className="text-2xl font-bold mb-4 text-white">Movies</h1>
+              <h1 className="text-2xl font-bold mb-4"> </h1>
             </div>
             <div className="flex items-center gap-4">
               <Select value={genreFilter} onValueChange={setGenreFilter}>

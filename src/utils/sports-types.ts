@@ -1,6 +1,8 @@
 export interface Sport {
   id: string;
   name: string;
+  slug?: string;
+  icon?: string;
 }
 
 export interface MatchSource {
@@ -10,10 +12,12 @@ export interface MatchSource {
 
 export interface Stream {
   id?: string;
-  source: string;
-  streamNo: number;
+  source?: string;
+  streamNo?: number;
   embedUrl: string;
   name?: string;
+  quality?: string;
+  language?: string;
 }
 
 export interface APIMatch {

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, ReactNode } from 'react';
 import { useAuth } from '@/hooks';
 import { useUserPreferences } from '@/hooks/user-preferences';
 import { Media } from '@/utils/types';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { 
   watchHistoryService,
   watchlistService,
