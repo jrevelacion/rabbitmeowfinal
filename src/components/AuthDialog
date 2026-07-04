@@ -1,0 +1,209 @@
+import { useState, useEffect } from 'react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Eye, EyeOff, Loader2, Check, X } from 'lucide-react';
+import { useAuth } from '@/hooks';
+import { useAuthDialog } from '@/contexts/auth-dialog-context';
+import { useToast } from '@/hooks/use-toast';
+import { authService } from '@/lib/auth';
+
+const AuthDialog = () => {
+  const { open, mode, setMode, closeAuth } = useAuthDialog();
+  const { signIn, signUp } = useAuth();
+  const { toast } = useToast();
+
+  // Shared
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Login
+  const [identifier, setIdentifier] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+
+  // Signup
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [usernameError, setUsernameError] = useState('');
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+
+  // Reset state when closed
+  useEffect(() => {
+    if (!open) {
+      setShowPassword(false);
+      setIdentifier(''); setLoginPassword('');
+      setEmail(''); setUsername(''); setPassword(''); setConfirmPassword('');
+      setUsernameError(''); setUsernameAvailable(null);
+    }
+  }, [open]);
+
+  const checkUsername = async (value: string) => {
+    if (value.length < 3) { setUsernameError('Must be at least 3 characters'); setUsernameAvailable(null); return; }
+    if (value.length > 20) { setUsernameError('Cannot exceed 20 characters'); setUsernameAvailable(null); return; }
+    if (!/^[a-zA-Z0-9_]+$/.test(value)) { setUsernameError('Letters, numbers and _ only'); setUsernameAvailable(null); return; }
+    setIsCheckingUsername(true);
+    try {
+      const r = await authService.checkUsername(value);
+      if (r.available) { setUsernameError(''); setUsernameAvailable(true); }
+      else { setUsernameError('Username already taken'); setUsernameAvailable(false); }
+    } catch { setUsernameError('Error checking availability'); setUsernameAvailable(null); }
+    finally { setIsCheckingUsername(false); }
+  };
+
+  const onUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setUsername(v);
+    if ((window as any).usernameTimeout) clearTimeout((window as any).usernameTimeout);
+    (window as any).usernameTimeout = setTimeout(() => {
+      if (v.trim()) checkUsername(v);
+      else { setUsernameError(''); setUsernameAvailable(null); }
+    }, 500);
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try { await signIn(identifier, loginPassword); closeAuth(); }
+    catch { /* handled */ }
+    finally { setIsLoading(false); }
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirmPassword) { toast({ title: 'Passwords do not match', variant: 'destructive' }); return; }
+    if (!usernameAvailable) { toast({ title: 'Please choose a valid and available username', variant: 'destructive' }); return; }
+    setIsLoading(true);
+    try { await signUp(email, password, username); closeAuth(); }
+    catch { /* handled */ }
+    finally { setIsLoading(false); }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && closeAuth()}>
+      <DialogContent
+        className="p-0 max-w-sm border border-white/10 bg-white/[0.04] backdrop-blur-2xl shadow-2xl rounded-2xl overflow-hidden"
+      >
+        <div className="p-7 sm:p-8">
+          {/* Title */}
+          <h2 className="text-xl font-semibold text-white text-center mb-1">
+            {mode === 'login' ? 'Welcome back' : 'Create your account'}
+          </h2>
+          <p className="text-sm text-white/50 text-center mb-6">
+            {mode === 'login' ? 'Sign in to continue' : 'It only takes a moment'}
+          </p>
+
+          {/* Segmented tabs */}
+          <div className="flex p-0.5 bg-white/[0.05] rounded-lg border border-white/10 mb-6">
+            <button
+              onClick={() => setMode('login')}
+              className={`flex-1 py-1.5 text-xs rounded-md transition-all ${
+                mode === 'login' ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white/80'
+              }`}
+            >
+              Sign in
+            </button>
+            <button
+              onClick={() => setMode('signup')}
+              className={`flex-1 py-1.5 text-xs rounded-md transition-all ${
+                mode === 'signup' ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white/80'
+              }`}
+            >
+              Sign up
+            </button>
+          </div>
+
+
+          {mode === 'login' ? (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="d-identifier" className="text-xs uppercase tracking-wider text-white/70">Email or Username</Label>
+                <Input id="d-identifier" type="text" placeholder="you@example.com"
+                  value={identifier} onChange={(e) => setIdentifier(e.target.value)}
+                  required className="h-11 bg-white/[0.04] border-white/10" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="d-password" className="text-xs uppercase tracking-wider text-white/70">Password</Label>
+                <div className="relative">
+                  <Input id="d-password" type={showPassword ? 'text' : 'password'} placeholder="••••••••"
+                    value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)}
+                    required className="h-11 pr-10 bg-white/[0.04] border-white/10" />
+                  <button type="button" onClick={() => setShowPassword(s => !s)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white">
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              <Button type="submit" disabled={isLoading} className="w-full h-11 bg-accent hover:bg-accent/90 text-background font-medium">
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sign in'}
+              </Button>
+              <p className="text-sm text-center text-white/60">
+                Don't have an account?{' '}
+                <button type="button" onClick={() => setMode('signup')} className="text-accent hover:underline font-medium">
+                  Create one
+                </button>
+              </p>
+            </form>
+          ) : (
+            <form onSubmit={handleSignup} className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="d-email" className="text-xs uppercase tracking-wider text-white/70">Email</Label>
+                <Input id="d-email" type="email" placeholder="you@example.com"
+                  value={email} onChange={(e) => setEmail(e.target.value)}
+                  required className="h-11 bg-white/[0.04] border-white/10" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="d-username" className="text-xs uppercase tracking-wider text-white/70 flex items-center gap-2">
+                  Username
+                  {isCheckingUsername && <Loader2 className="h-3 w-3 animate-spin" />}
+                  {usernameAvailable === true && <Check className="h-3 w-3 text-green-500" />}
+                  {usernameAvailable === false && <X className="h-3 w-3 text-destructive" />}
+                </Label>
+                <Input id="d-username" type="text" placeholder="yourname"
+                  value={username} onChange={onUsernameChange} required
+                  className={`h-11 bg-white/[0.04] border-white/10 ${usernameAvailable === false ? 'border-destructive' : usernameAvailable ? 'border-green-500/60' : ''}`} />
+                {usernameError && <p className="text-xs text-destructive">{usernameError}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="d-pw" className="text-xs uppercase tracking-wider text-white/70">Password</Label>
+                <div className="relative">
+                  <Input id="d-pw" type={showPassword ? 'text' : 'password'} placeholder="••••••••"
+                    value={password} onChange={(e) => setPassword(e.target.value)}
+                    required className="h-11 pr-10 bg-white/[0.04] border-white/10" />
+                  <button type="button" onClick={() => setShowPassword(s => !s)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white">
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="d-cpw" className="text-xs uppercase tracking-wider text-white/70">Confirm Password</Label>
+                <Input id="d-cpw" type={showPassword ? 'text' : 'password'} placeholder="••••••••"
+                  value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                  required className="h-11 bg-white/[0.04] border-white/10" />
+                {confirmPassword && password !== confirmPassword && (
+                  <p className="text-xs text-destructive">Passwords don't match</p>
+                )}
+              </div>
+              <Button type="submit" disabled={isLoading || !usernameAvailable || isCheckingUsername}
+                className="w-full h-11 bg-accent hover:bg-accent/90 text-background font-medium mt-1">
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create account'}
+              </Button>
+              <p className="text-sm text-center text-white/60">
+                Already have an account?{' '}
+                <button type="button" onClick={() => setMode('login')} className="text-accent hover:underline font-medium">
+                  Sign in
+                </button>
+              </p>
+            </form>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default AuthDialog;
