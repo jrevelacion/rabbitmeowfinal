@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import { AuthProvider } from "@/hooks";
+import { AuthProvider } from "@/hooks/auth-context";
 import { WatchHistoryProvider } from "@/contexts/watch-history";
 import { UserPreferencesProvider } from "@/contexts/types/user-preferences"; // Updated import
 import { ProtectedRoute } from "@/components/ProtectedRoute";

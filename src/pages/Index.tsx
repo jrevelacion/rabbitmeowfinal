@@ -10,7 +10,7 @@ import {
   getComedySeries
 } from '@/utils/api';
 import { Media } from '@/utils/types';
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/hooks/useAuth';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import ContentRow from '@/components/ContentRow';
@@ -96,7 +96,6 @@ const Index = () => {
 
   return (
     <>
-
       <main className="min-h-screen bg-background pb-16">
         <Navbar />
         <PWAInstallPrompt />
@@ -109,7 +108,7 @@ const Index = () => {
           <>
              <div className="pt-16">
 
-              {true && (
+              {showWelcomeCard && (
                 <div className="mx-4 md:mx-8 mt-6">
                   <div className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-gradient-to-r from-zinc-900 to-zinc-950 shadow-xl">
 
@@ -197,4 +196,3 @@ const Index = () => {
 };
 
 export default Index;
-```
