@@ -23,6 +23,7 @@ import DiscordButton from '@/components/DiscordButton';
 import Ads from '@/components/Ads';
 import { Helmet } from 'react-helmet';
 import { useUserPreferences } from '@/hooks/user-preferences';
+import WelcomeDialog from '@/components/WelcomeDialog';
 
 const Index = () => {
   const { userPreferences } = useUserPreferences();
@@ -42,6 +43,15 @@ const Index = () => {
   const [showWelcomeCard, setShowWelcomeCard] = useState(() => {
     return localStorage.getItem('hideWelcomeCard') !== 'true';
   });
+
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(() => {
+    return localStorage.getItem('hideWelcomeDialog') !== 'true';
+  });
+
+  const closeWelcomeDialog = () => {
+    localStorage.setItem('hideWelcomeDialog', 'true');
+    setShowWelcomeDialog(false);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,6 +106,7 @@ const Index = () => {
 
   return (
     <>
+      <WelcomeDialog isOpen={showWelcomeDialog} onClose={closeWelcomeDialog} />
 
       <main className="min-h-screen bg-background pb-16">
         <Navbar />
