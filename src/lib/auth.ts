@@ -114,13 +114,15 @@ export const authService = {
     }
   },
 
-  // Check username availability
+  // Check username availability using Firebase
   async checkUsername(username: string): Promise<{ available: boolean; message: string }> {
     try {
-      const response = await api.post('/auth/check-username', { username });
-      return response.data;
+      // Import Firebase auth service dynamically to avoid circular dependencies
+      const { firebaseAuthService } = await import('./firebase-auth');
+      return await firebaseAuthService.checkUsername(username);
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Failed to check username');
+      console.error('Error checking username:', error);
+      throw new Error(error.message || 'Failed to check username availability');
     }
   },
 

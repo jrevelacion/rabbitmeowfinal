@@ -9,7 +9,7 @@ import {
   browserLocalPersistence,
 } from 'firebase/auth';
 import { auth, db } from './firebase';
-import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, query, where, collection, getDocs } from 'firebase/firestore';
 
 export interface User {
   uid: string;
@@ -132,6 +132,32 @@ class FirebaseAuthService {
 
   isAuthenticated(): boolean {
     return !!auth.currentUser;
+  }
+
+  async checkUsername(username: string): Promise<{ available: boolean; message: string }> {
+    try {
+      // Query Firestore to check if username already exists
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('displayName', '==', username));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        // Username is available
+        return {
+          available: true,
+          message: 'Username is available'
+        };
+      } else {
+        // Username is already taken
+        return {
+          available: false,
+          message: 'Username is already taken'
+        };
+      }
+    } catch (error: any) {
+      console.error('Error checking username availability:', error);
+      throw new Error('Failed to check username availability: ' + (error.message || 'Unknown error'));
+    }
   }
 
   getStoredUser(): User | null {
