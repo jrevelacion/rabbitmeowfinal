@@ -77,11 +77,11 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
               <img
                 src={getMatchPosterUrl(match.poster)}
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover opacity-40 blur-none scale-100 group-hover:scale-105 transition-all duration-500"
+                className="absolute inset-0 w-full h-full object-cover opacity-60 scale-100 group-hover:scale-105 transition-all duration-500"
                 loading="lazy"
               />
               {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/30 to-black/20 z-5" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-5" />
             </>
           )}
           
