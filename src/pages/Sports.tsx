@@ -196,7 +196,7 @@ const Sports = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6, delay: 0.1 }}
                 >
-                  BROADCAST <span className="text-white drop-shadow-xl">CENTER</span>
+                  RABBITMEOW <span className="text-white drop-shadow-xl">SPORTS CENTER</span>
                 </motion.h1>
                 <motion.p 
                   className="text-white/90 text-sm md:text-base font-bold tracking-wide mt-3 drop-shadow-md"
@@ -257,15 +257,19 @@ const Sports = () => {
                   sportsList.map((sport: Sport, index) => {
                     const sportColor = getColorForSport(sport.id);
                     const isSelected = selectedSport === sport.id;
+                    // Extract gradient colors from the sportColor.bg string
+                    const gradientColors = sportColor.bg.split(' ');
+                    const color1 = gradientColors[1] || 'rgb(59, 130, 246)';
+                    const color2 = gradientColors[3] || 'rgb(34, 211, 238)';
+                    
                     return (
                       <motion.button
                         key={sport.id}
                         onClick={() => handleSportChange(sport.id)}
-                        className={`px-6 py-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all duration-300 border-2 relative overflow-hidden group shadow-lg hover:shadow-2xl`}
+                        className={`px-6 py-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all duration-300 border-2 relative overflow-hidden group shadow-lg hover:shadow-2xl text-white`}
                         style={{
-                          background: isSelected ? `linear-gradient(135deg, ${sportColor.bg.split(' ')[1]}, ${sportColor.bg.split(' ')[3]})` : 'rgba(255,255,255,0.1)',
+                          background: isSelected ? `linear-gradient(135deg, ${color1}, ${color2})` : 'rgba(255,255,255,0.1)',
                           borderColor: isSelected ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)',
-                          color: isSelected ? 'white' : 'rgba(255,255,255,0.7)',
                           boxShadow: isSelected ? `0 0 30px ${sportColor.glow}` : 'none'
                         }}
                         whileHover={{ scale: 1.05 }}

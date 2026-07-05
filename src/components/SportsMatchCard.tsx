@@ -72,11 +72,11 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
               <img
                 src={getMatchPosterUrl(match.poster)}
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-110 group-hover:scale-105 transition-all duration-500"
+                className="absolute inset-0 w-full h-full object-cover opacity-40 blur-none scale-100 group-hover:scale-105 transition-all duration-500"
                 loading="lazy"
               />
               {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent z-5" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/30 to-black/20 z-5" />
             </>
           )}
           
@@ -92,8 +92,8 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
               {/* Home Team */}
               <div className="flex flex-col items-center text-center w-[45%]">
                 <motion.div 
-                  className="w-16 h-16 rounded-xl bg-gradient-to-br from-white/30 to-white/10 border-2 border-white/40 p-2.5 flex items-center justify-center shadow-lg group-hover:border-white/60 transition-all duration-300 relative backdrop-blur-sm"
-                  animate={isHovered ? { y: -4, boxShadow: `0 8px 20px rgba(255,255,255,0.2)` } : { y: 0 }}
+                  className="w-20 h-20 rounded-xl bg-gradient-to-br from-white/30 to-white/10 border-2 border-white/40 p-3 flex items-center justify-center shadow-lg group-hover:border-white/60 transition-all duration-300 relative backdrop-blur-sm"
+                  animate={isHovered ? { y: -6, boxShadow: `0 12px 30px rgba(255,255,255,0.3)` } : { y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
                   <img
@@ -104,7 +104,7 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
                     onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
                   />
                 </motion.div>
-                <span className="text-xs font-black text-white truncate w-full mt-2 tracking-wide uppercase drop-shadow-lg group-hover:text-yellow-100 transition-all duration-300">
+                <span className="text-xs font-black text-white truncate w-full mt-2.5 tracking-wide uppercase drop-shadow-lg group-hover:text-yellow-100 transition-all duration-300">
                   {match.teams.home.name}
                 </span>
               </div>
@@ -121,8 +121,8 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
               {/* Away Team */}
               <div className="flex flex-col items-center text-center w-[45%]">
                 <motion.div 
-                  className="w-16 h-16 rounded-xl bg-gradient-to-br from-white/30 to-white/10 border-2 border-white/40 p-2.5 flex items-center justify-center shadow-lg group-hover:border-white/60 transition-all duration-300 relative backdrop-blur-sm"
-                  animate={isHovered ? { y: -4, boxShadow: `0 8px 20px rgba(255,255,255,0.2)` } : { y: 0 }}
+                  className="w-20 h-20 rounded-xl bg-gradient-to-br from-white/30 to-white/10 border-2 border-white/40 p-3 flex items-center justify-center shadow-lg group-hover:border-white/60 transition-all duration-300 relative backdrop-blur-sm"
+                  animate={isHovered ? { y: -6, boxShadow: `0 12px 30px rgba(255,255,255,0.3)` } : { y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
                   <img
@@ -133,7 +133,7 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
                     onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
                   />
                 </motion.div>
-                <span className="text-xs font-black text-white truncate w-full mt-2 tracking-wide uppercase drop-shadow-lg group-hover:text-yellow-100 transition-all duration-300">
+                <span className="text-xs font-black text-white truncate w-full mt-2.5 tracking-wide uppercase drop-shadow-lg group-hover:text-yellow-100 transition-all duration-300">
                   {match.teams.away.name}
                 </span>
               </div>
