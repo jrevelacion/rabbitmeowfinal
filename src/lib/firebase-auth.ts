@@ -391,12 +391,12 @@ class FirebaseAuthService {
       const watchlistRef = doc(db, 'users', currentUser.uid, 'watchlist', mediaId);
       await setDoc(watchlistRef, {
         media_id: mediaId,
-        title: media.title || media.name,
-        poster_path: media.poster_path,
-        backdrop_path: media.backdrop_path,
-        media_type: media.media_type,
-        overview: media.overview,
-        rating: media.vote_average,
+        title: media.title || media.name || 'Unknown',
+        poster_path: media.poster_path || null,
+        backdrop_path: media.backdrop_path || null,
+        media_type: media.media_type || 'unknown',
+        overview: media.overview || '',
+        rating: media.vote_average || 0,
         addedAt: serverTimestamp(),
       });
     } catch (error: any) {
@@ -444,12 +444,12 @@ class FirebaseAuthService {
       const favoritesRef = doc(db, 'users', currentUser.uid, 'favorites', mediaId);
       await setDoc(favoritesRef, {
         media_id: mediaId,
-        title: media.title || media.name,
-        poster_path: media.poster_path,
-        backdrop_path: media.backdrop_path,
-        media_type: media.media_type,
-        overview: media.overview,
-        rating: media.vote_average,
+        title: media.title || media.name || 'Unknown',
+        poster_path: media.poster_path || null,
+        backdrop_path: media.backdrop_path || null,
+        media_type: media.media_type || 'unknown',
+        overview: media.overview || '',
+        rating: media.vote_average || 0,
         addedAt: serverTimestamp(),
       });
     } catch (error: any) {
@@ -500,14 +500,14 @@ class FirebaseAuthService {
       
       await setDoc(historyRef, {
         media_id: mediaId,
-        title: media.title || media.name,
-        poster_path: media.poster_path,
-        backdrop_path: media.backdrop_path,
-        media_type: media.media_type,
-        overview: media.overview,
-        rating: media.vote_average,
-        watch_position: watchPosition,
-        duration: duration,
+        title: media.title || media.name || 'Unknown',
+        poster_path: media.poster_path || null,
+        backdrop_path: media.backdrop_path || null,
+        media_type: media.media_type || 'unknown',
+        overview: media.overview || '',
+        rating: media.vote_average || 0,
+        watch_position: watchPosition || 0,
+        duration: duration || 0,
         season: season || null,
         episode: episode || null,
         updatedAt: serverTimestamp(),
