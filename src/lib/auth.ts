@@ -1,4 +1,22 @@
 import { firebaseAuthService } from './firebase-auth';
+import axios from 'axios';
+
+// API instance for backend services
+const api = axios.create({
+  baseURL: 'https://api.flickystream.ru/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 // User interface - displayName is the username
 export interface User {
@@ -193,9 +211,11 @@ export const watchlistService = {
   async getWatchlist(): Promise<any[]> {
     try {
       const response = await api.get('/watchlist');
-      return response.data;
+      // Ensure we return an array
+      return Array.isArray(response.data) ? response.data : (response.data?.items || []);
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Failed to get watchlist');
+      console.error('Failed to get watchlist:', error);
+      return [];
     }
   },
 
@@ -205,7 +225,7 @@ export const watchlistService = {
     return cachedRequest(cacheKey, async () => {
       try {
         await api.post('/watchlist', {
-          media_id: media.id || media.media_id,
+          media_id: String(media.id || media.media_id),
           title: media.title || media.name,
           poster_path: media.poster_path,
           backdrop_path: media.backdrop_path,
@@ -214,6 +234,7 @@ export const watchlistService = {
           rating: media.vote_average
         });
       } catch (error: any) {
+        console.error('Failed to add to watchlist:', error);
         throw new Error(error.response?.data?.error || 'Failed to add to watchlist');
       }
     });
@@ -223,6 +244,7 @@ export const watchlistService = {
     try {
       await api.delete(`/watchlist/${mediaId}`);
     } catch (error: any) {
+      console.error('Failed to remove from watchlist:', error);
       throw new Error(error.response?.data?.error || 'Failed to remove from watchlist');
     }
   }
@@ -233,9 +255,11 @@ export const favouritesService = {
   async getFavourites(): Promise<any[]> {
     try {
       const response = await api.get('/favourites');
-      return response.data;
+      // Ensure we return an array
+      return Array.isArray(response.data) ? response.data : (response.data?.items || []);
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Failed to get favourites');
+      console.error('Failed to get favourites:', error);
+      return [];
     }
   },
 
@@ -245,7 +269,7 @@ export const favouritesService = {
     return cachedRequest(cacheKey, async () => {
       try {
         await api.post('/favourites', {
-          media_id: media.id || media.media_id,
+          media_id: String(media.id || media.media_id),
           title: media.title || media.name,
           poster_path: media.poster_path,
           backdrop_path: media.backdrop_path,
@@ -254,6 +278,7 @@ export const favouritesService = {
           rating: media.vote_average
         });
       } catch (error: any) {
+        console.error('Failed to add to favourites:', error);
         throw new Error(error.response?.data?.error || 'Failed to add to favourites');
       }
     });
@@ -263,6 +288,7 @@ export const favouritesService = {
     try {
       await api.delete(`/favourites/${mediaId}`);
     } catch (error: any) {
+      console.error('Failed to remove from favourites:', error);
       throw new Error(error.response?.data?.error || 'Failed to remove from favourites');
     }
   }
