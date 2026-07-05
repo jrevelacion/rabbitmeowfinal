@@ -27,7 +27,7 @@ const Hero = ({ media, className }: HeroProps) => {
   const navigate = useNavigate();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   
-  const apiKey = '05902896074695709d7763505bb88b4d'; // Replace with your TMDb API key
+  const apiKey = '297f1b91919bae59d50ed815f8d2e14c'; // Replace with your TMDb API key
 
   // Fetch logos for each media item
   const fetchLogo = async (mediaItem: Media): Promise<string | undefined> => {
