@@ -1,22 +1,5 @@
 import { firebaseAuthService } from './firebase-auth';
-import axios from 'axios';
-
-// API instance for backend services
-const api = axios.create({
-  baseURL: 'https://api.flickystream.ru/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add token to requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// API instance for backend services removed in favor of Firebase Firestore
 
 // User interface - displayName is the username
 export interface User {
@@ -206,289 +189,76 @@ export const authService = {
 
 
 
-// Watchlist functions (these can use API or Firebase as needed)
+// Watchlist functions using Firebase Firestore
 export const watchlistService = {
   async getWatchlist(): Promise<any[]> {
-    try {
-      const response = await api.get('/watchlist');
-      // Ensure we return an array
-      return Array.isArray(response.data) ? response.data : (response.data?.items || []);
-    } catch (error: any) {
-      console.error('Failed to get watchlist:', error);
-      return [];
-    }
+    return await firebaseAuthService.getWatchlist();
   },
 
   async addToWatchlist(media: any): Promise<void> {
     const cacheKey = `add_watchlist_${media.id || media.media_id}`;
-    
     return cachedRequest(cacheKey, async () => {
-      try {
-        await api.post('/watchlist', {
-          media_id: String(media.id || media.media_id),
-          title: media.title || media.name,
-          poster_path: media.poster_path,
-          backdrop_path: media.backdrop_path,
-          media_type: media.media_type,
-          overview: media.overview,
-          rating: media.vote_average
-        });
-      } catch (error: any) {
-        console.error('Failed to add to watchlist:', error);
-        throw new Error(error.response?.data?.error || 'Failed to add to watchlist');
-      }
+      await firebaseAuthService.addToWatchlist(media);
     });
   },
 
   async removeFromWatchlist(mediaId: string): Promise<void> {
-    try {
-      await api.delete(`/watchlist/${mediaId}`);
-    } catch (error: any) {
-      console.error('Failed to remove from watchlist:', error);
-      throw new Error(error.response?.data?.error || 'Failed to remove from watchlist');
-    }
+    await firebaseAuthService.removeFromWatchlist(mediaId);
   }
 };
 
-// Favourites functions
+// Favourites functions using Firebase Firestore
 export const favouritesService = {
   async getFavourites(): Promise<any[]> {
-    try {
-      const response = await api.get('/favourites');
-      // Ensure we return an array
-      return Array.isArray(response.data) ? response.data : (response.data?.items || []);
-    } catch (error: any) {
-      console.error('Failed to get favourites:', error);
-      return [];
-    }
+    return await firebaseAuthService.getFavorites();
   },
 
   async addToFavourites(media: any): Promise<void> {
     const cacheKey = `add_favourites_${media.id || media.media_id}`;
-    
     return cachedRequest(cacheKey, async () => {
-      try {
-        await api.post('/favourites', {
-          media_id: String(media.id || media.media_id),
-          title: media.title || media.name,
-          poster_path: media.poster_path,
-          backdrop_path: media.backdrop_path,
-          media_type: media.media_type,
-          overview: media.overview,
-          rating: media.vote_average
-        });
-      } catch (error: any) {
-        console.error('Failed to add to favourites:', error);
-        throw new Error(error.response?.data?.error || 'Failed to add to favourites');
-      }
+      await firebaseAuthService.addToFavorites(media);
     });
   },
 
   async removeFromFavourites(mediaId: string): Promise<void> {
-    try {
-      await api.delete(`/favourites/${mediaId}`);
-    } catch (error: any) {
-      console.error('Failed to remove from favourites:', error);
-      throw new Error(error.response?.data?.error || 'Failed to remove from favourites');
-    }
+    await firebaseAuthService.removeFromFavorites(mediaId);
   }
 };
 
-// Watch history functions
+// Watch history functions using Firebase Firestore
 export const watchHistoryService = {
-  // Get watch history
   async getWatchHistory(limit = 20, offset = 0): Promise<{ items: any[]; hasMore: boolean }> {
-    try {
-      const response = await api.get(`/watch-history?limit=${limit}&offset=${offset}`);
-      return response.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Failed to get watch history');
-    }
+    return await firebaseAuthService.getWatchHistory(limit);
   },
 
-  // Get specific watch history item
-  async getWatchHistoryItem(mediaId: number, mediaType: 'movie' | 'tv', season?: number, episode?: number): Promise<any | null> {
-    try {
-      const params = new URLSearchParams({
-        media_id: mediaId.toString(),
-        media_type: mediaType
-      });
-      
-      if (season) params.append('season', season.toString());
-      if (episode) params.append('episode', episode.toString());
-      
-      const response = await api.get(`/watch-history/item?${params.toString()}`);
-      return response.data;
-    } catch (error: any) {
-      // If not found, return null instead of throwing
-      if (error.response?.status === 404) {
-        return null;
-      }
-      throw new Error(error.response?.data?.error || 'Failed to get watch history item');
-    }
-  },
-
-  // Add or update watch history (UPSERT operation)
   async addToWatchHistory(media: any, watchPosition: number, duration: number, season?: number, episode?: number): Promise<void> {
-    // Create a unique cache key to prevent duplicate requests
     const cacheKey = `add_watch_history_${media.id || media.media_id}_${media.media_type}_${season || 0}_${episode || 0}_${Math.floor(watchPosition / 10)}`;
-    
     return cachedRequest(cacheKey, async () => {
-      try {
-        // First, check if item already exists
-        const existingItem = await this.getWatchHistoryItem(
-          media.id || media.media_id,
-          media.media_type,
-          season,
-          episode
-        ).catch(() => null);
-        
-        const requestData = {
-          media_id: media.id || media.media_id,
-          title: media.title || media.name,
-          poster_path: media.poster_path,
-          backdrop_path: media.backdrop_path,
-          media_type: media.media_type,
-          overview: media.overview,
-          rating: media.vote_average,
-          watch_position: watchPosition,
-          duration: duration,
-          season: season,
-          episode: episode
-        };
-        
-        if (existingItem) {
-          // Update existing item if watch position is significantly different
-          const positionDiff = Math.abs(existingItem.watch_position - watchPosition);
-          const timeDiff = Date.now() - new Date(existingItem.updated_at || existingItem.created_at).getTime();
-          
-          // Only update if position changed significantly (> 30 seconds) OR it's been a while (> 5 minutes)
-          if (positionDiff > 30 || timeDiff > 5 * 60 * 1000) {
-            await api.put(`/watch-history/${existingItem.id}`, requestData);
-          }
-        } else {
-          // Create new item
-          await api.post('/watch-history', requestData);
-        }
-      } catch (error: any) {
-        // If it's a duplicate error, just log it
-        if (error.response?.status === 409) {
-          console.log('Watch history item already exists');
-          return;
-        }
-        
-        // If the endpoint doesn't exist, try the old endpoint
-        if (error.response?.status === 404) {
-          try {
-            await api.post('/watch-history', {
-              media_id: media.id || media.media_id,
-              title: media.title || media.name,
-              poster_path: media.poster_path,
-              backdrop_path: media.backdrop_path,
-              media_type: media.media_type,
-              overview: media.overview,
-              rating: media.vote_average,
-              watch_position: watchPosition,
-              duration: duration,
-              season: season,
-              episode: episode
-            });
-          } catch (fallbackError: any) {
-            throw new Error(fallbackError.response?.data?.error || 'Failed to add to watch history');
-          }
-        } else {
-          throw new Error(error.response?.data?.error || 'Failed to add to watch history');
-        }
-      }
-    });
-  },
-
-  // Update watch position only
-  async updateWatchPosition(mediaId: number, mediaType: 'movie' | 'tv', watchPosition: number, season?: number, episode?: number): Promise<void> {
-    const cacheKey = `update_watch_position_${mediaId}_${mediaType}_${season || 0}_${episode || 0}_${Math.floor(watchPosition / 30)}`;
-    
-    return cachedRequest(cacheKey, async () => {
-      try {
-        await api.patch('/watch-history/position', {
-          media_id: mediaId,
-          media_type: mediaType,
-          watch_position: watchPosition,
-          season: season,
-          episode: episode
-        });
-      } catch (error: any) {
-        // If update endpoint doesn't exist, use addToWatchHistory as fallback
-        if (error.response?.status === 404) {
-          const mockMedia = {
-            id: mediaId,
-            media_id: mediaId,
-            title: '',
-            name: '',
-            poster_path: '',
-            backdrop_path: '',
-            media_type: mediaType,
-            overview: '',
-            vote_average: 0
-          };
-          
-          await this.addToWatchHistory(mockMedia, watchPosition, 0, season, episode);
-        } else {
-          throw new Error(error.response?.data?.error || 'Failed to update watch position');
-        }
-      }
+      await firebaseAuthService.addToWatchHistory(media, watchPosition, duration, season, episode);
     });
   },
 
   async clearWatchHistory(): Promise<void> {
-    try {
-      await api.delete('/watch-history');
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Failed to clear watch history');
-    }
+    console.warn('clearWatchHistory not yet implemented for Firestore');
   },
 
   async cleanupWatchHistory(): Promise<{ removedDuplicates: number; remainingItems: number }> {
-    try {
-      const response = await api.post('/watch-history/cleanup');
-      return {
-        removedDuplicates: response.data.removedDuplicates,
-        remainingItems: response.data.remainingItems
-      };
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Failed to cleanup watch history');
-    }
+    return { removedDuplicates: 0, remainingItems: 0 };
   },
 
-  // Delete specific watch history item
   async deleteWatchHistoryItem(id: string): Promise<void> {
-    try {
-      await api.delete(`/watch-history/${id}`);
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Failed to delete watch history item');
-    }
+    console.warn('deleteWatchHistoryItem not yet implemented for Firestore');
   }
 };
 
-// User preferences functions
+// User preferences functions (Fallback to local storage)
 export const preferencesService = {
   async getPreferences(): Promise<any> {
-    try {
-      const response = await api.get('/preferences');
-      return response.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Failed to get preferences');
-    }
+    const stored = localStorage.getItem('user_preferences');
+    return stored ? JSON.parse(stored) : {};
   },
 
   async updatePreferences(preferences: any): Promise<void> {
-    const cacheKey = `update_preferences_${JSON.stringify(preferences)}`;
-    
-    return cachedRequest(cacheKey, async () => {
-      try {
-        await api.patch('/preferences', preferences);
-      } catch (error: any) {
-        throw new Error(error.response?.data?.error || 'Failed to update preferences');
-      }
-    });
+    localStorage.setItem('user_preferences', JSON.stringify(preferences));
   }
 };

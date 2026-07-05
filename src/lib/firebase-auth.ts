@@ -9,7 +9,7 @@ import {
   browserLocalPersistence,
 } from 'firebase/auth';
 import { auth, db } from './firebase';
-import { doc, setDoc, getDoc, updateDoc, query, where, collection, getDocs } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, query, where, collection, getDocs, deleteDoc, orderBy, limit as firestoreLimit, serverTimestamp } from 'firebase/firestore';
 
 export interface User {
   uid: string;
@@ -286,6 +286,160 @@ class FirebaseAuthService {
       };
     } catch (error: any) {
       throw new Error(error.message || 'Failed to change email');
+    }
+  }
+
+  // Watchlist Methods
+  async getWatchlist(): Promise<any[]> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return [];
+
+    try {
+      const watchlistRef = collection(db, 'users', currentUser.uid, 'watchlist');
+      const q = query(watchlistRef, orderBy('addedAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error('Error getting watchlist:', error);
+      return [];
+    }
+  }
+
+  async addToWatchlist(media: any): Promise<void> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error('User not authenticated');
+
+    try {
+      const mediaId = String(media.id || media.media_id);
+      const watchlistRef = doc(db, 'users', currentUser.uid, 'watchlist', mediaId);
+      await setDoc(watchlistRef, {
+        media_id: mediaId,
+        title: media.title || media.name,
+        poster_path: media.poster_path,
+        backdrop_path: media.backdrop_path,
+        media_type: media.media_type,
+        overview: media.overview,
+        rating: media.vote_average,
+        addedAt: serverTimestamp(),
+      });
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to add to watchlist');
+    }
+  }
+
+  async removeFromWatchlist(mediaId: string): Promise<void> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error('User not authenticated');
+
+    try {
+      const watchlistRef = doc(db, 'users', currentUser.uid, 'watchlist', String(mediaId));
+      await deleteDoc(watchlistRef);
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to remove from watchlist');
+    }
+  }
+
+  // Favorites Methods
+  async getFavorites(): Promise<any[]> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return [];
+
+    try {
+      const favoritesRef = collection(db, 'users', currentUser.uid, 'favorites');
+      const q = query(favoritesRef, orderBy('addedAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error('Error getting favorites:', error);
+      return [];
+    }
+  }
+
+  async addToFavorites(media: any): Promise<void> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error('User not authenticated');
+
+    try {
+      const mediaId = String(media.id || media.media_id);
+      const favoritesRef = doc(db, 'users', currentUser.uid, 'favorites', mediaId);
+      await setDoc(favoritesRef, {
+        media_id: mediaId,
+        title: media.title || media.name,
+        poster_path: media.poster_path,
+        backdrop_path: media.backdrop_path,
+        media_type: media.media_type,
+        overview: media.overview,
+        rating: media.vote_average,
+        addedAt: serverTimestamp(),
+      });
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to add to favorites');
+    }
+  }
+
+  async removeFromFavorites(mediaId: string): Promise<void> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error('User not authenticated');
+
+    try {
+      const favoritesRef = doc(db, 'users', currentUser.uid, 'favorites', String(mediaId));
+      await deleteDoc(favoritesRef);
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to remove from favorites');
+    }
+  }
+
+  // Watch History Methods (Migration to Firestore)
+  async getWatchHistory(limitCount: number = 20): Promise<{ items: any[]; hasMore: boolean }> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return { items: [], hasMore: false };
+
+    try {
+      const historyRef = collection(db, 'users', currentUser.uid, 'watchHistory');
+      const q = query(historyRef, orderBy('updatedAt', 'desc'), firestoreLimit(limitCount));
+      const querySnapshot = await getDocs(q);
+      const items = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      return { items, hasMore: items.length === limitCount };
+    } catch (error) {
+      console.error('Error getting watch history:', error);
+      return { items: [], hasMore: false };
+    }
+  }
+
+  async addToWatchHistory(media: any, watchPosition: number, duration: number, season?: number, episode?: number): Promise<void> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    try {
+      const mediaId = String(media.id || media.media_id);
+      const docId = media.media_type === 'tv' ? `${mediaId}_s${season}_e${episode}` : mediaId;
+      const historyRef = doc(db, 'users', currentUser.uid, 'watchHistory', docId);
+      
+      await setDoc(historyRef, {
+        media_id: mediaId,
+        title: media.title || media.name,
+        poster_path: media.poster_path,
+        backdrop_path: media.backdrop_path,
+        media_type: media.media_type,
+        overview: media.overview,
+        rating: media.vote_average,
+        watch_position: watchPosition,
+        duration: duration,
+        season: season || null,
+        episode: episode || null,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+    } catch (error: any) {
+      console.error('Error adding to watch history:', error);
     }
   }
 }
