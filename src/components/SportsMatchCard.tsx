@@ -9,26 +9,12 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useUserPreferences } from '@/hooks/user-preferences';
 import { motion } from 'framer-motion';
+import { getColorForSport } from '@/utils/sports-colors';
 
 interface SportMatchCardProps {
   match: APIMatch;
   className?: string;
 }
-
-// Vibrant color palette for different sports/categories
-const getCardGradient = (category: string, index: number) => {
-  const gradients = [
-    'from-blue-600 to-cyan-500',
-    'from-purple-600 to-pink-500',
-    'from-green-600 to-emerald-500',
-    'from-orange-600 to-red-500',
-    'from-indigo-600 to-blue-500',
-    'from-rose-600 to-pink-500',
-    'from-amber-600 to-yellow-500',
-    'from-teal-600 to-cyan-500',
-  ];
-  return gradients[index % gradients.length];
-};
 
 const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
   const { userPreferences } = useUserPreferences();
@@ -48,8 +34,8 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
   const isUpcoming = matchTimestamp > now;
   const matchId = match.id;
   
-  // Determine gradient based on match properties
-  const gradientClass = getCardGradient(match.category, match.id.charCodeAt(0));
+  // Determine color based on match category
+  const sportColor = getColorForSport(match.category);
   
   return (
     <Link
@@ -61,7 +47,15 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Card className={`overflow-hidden bg-gradient-to-br ${gradientClass} h-full shadow-2xl flex flex-col justify-between rounded-2xl transition-all duration-300 group-hover:shadow-[0_0_40px_rgba(0,0,0,0.6)] border border-white/20`}>
+      <Card 
+        className={cn(
+          "overflow-hidden h-full shadow-2xl flex flex-col justify-between rounded-2xl transition-all duration-300 group-hover:shadow-[0_0_40px_rgba(0,0,0,0.6)] border border-white/20 bg-gradient-to-br",
+          sportColor.bg
+        )}
+        style={{
+          boxShadow: isHovered ? `0 0 30px ${sportColor.glow}` : 'none'
+        }}
+      >
         
         {/* Dynamic Canvas Area with Enhanced Effects */}
         <div className="relative aspect-[16/10] bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center p-4 border-b border-white/20 overflow-hidden">

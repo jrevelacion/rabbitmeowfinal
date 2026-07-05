@@ -13,6 +13,7 @@ import {
   getTodayMatches,
   getMatchesBySport,
 } from '@/utils/sports-api';
+import { getColorForSport } from '@/utils/sports-colors';
 import { useToast } from '@/hooks/use-toast';
 import { useUserPreferences } from '@/hooks/user-preferences';
 import Ads from '@/components/Ads';
@@ -27,21 +28,7 @@ const Sports = () => {
   const { userPreferences } = useUserPreferences();
   const accentColor = userPreferences?.accentColor || 'hsl(var(--accent))';
 
-  // Vibrant color palette for sports
-  const sportColors: { [key: string]: { bg: string; border: string; text: string; glow: string } } = {
-    all: { bg: 'from-blue-600 to-cyan-500', border: 'border-blue-400', text: 'text-blue-100', glow: 'rgba(59, 130, 246, 0.3)' },
-    football: { bg: 'from-green-600 to-emerald-500', border: 'border-green-400', text: 'text-green-100', glow: 'rgba(34, 197, 94, 0.3)' },
-    basketball: { bg: 'from-orange-600 to-amber-500', border: 'border-orange-400', text: 'text-orange-100', glow: 'rgba(234, 88, 12, 0.3)' },
-    tennis: { bg: 'from-yellow-500 to-lime-500', border: 'border-yellow-400', text: 'text-yellow-100', glow: 'rgba(234, 179, 8, 0.3)' },
-    cricket: { bg: 'from-blue-500 to-indigo-600', border: 'border-blue-400', text: 'text-blue-100', glow: 'rgba(99, 102, 241, 0.3)' },
-    hockey: { bg: 'from-red-600 to-pink-500', border: 'border-red-400', text: 'text-red-100', glow: 'rgba(220, 38, 38, 0.3)' },
-    volleyball: { bg: 'from-purple-600 to-pink-500', border: 'border-purple-400', text: 'text-purple-100', glow: 'rgba(147, 51, 234, 0.3)' },
-    baseball: { bg: 'from-red-500 to-orange-600', border: 'border-red-400', text: 'text-red-100', glow: 'rgba(239, 68, 68, 0.3)' },
-  };
 
-  const getColorForSport = (sportId: string) => {
-    return sportColors[sportId] || sportColors.all;
-  };
 
   const {
     data: sportsList = [],
@@ -258,36 +245,14 @@ const Sports = () => {
                     const sportColor = getColorForSport(sport.id);
                     const isSelected = selectedSport === sport.id;
                     
-                    // Map Tailwind classes to actual colors for the style object
-                    const colorMap: { [key: string]: string } = {
-                      'blue-600': 'rgb(37, 99, 235)',
-                      'cyan-500': 'rgb(6, 182, 212)',
-                      'green-600': 'rgb(22, 163, 74)',
-                      'emerald-500': 'rgb(16, 185, 129)',
-                      'orange-600': 'rgb(234, 88, 12)',
-                      'amber-500': 'rgb(245, 158, 11)',
-                      'yellow-500': 'rgb(234, 179, 8)',
-                      'lime-500': 'rgb(132, 204, 22)',
-                      'blue-500': 'rgb(59, 130, 246)',
-                      'indigo-600': 'rgb(79, 70, 229)',
-                      'red-600': 'rgb(220, 38, 38)',
-                      'pink-500': 'rgb(236, 72, 153)',
-                      'purple-600': 'rgb(147, 51, 234)',
-                      'red-500': 'rgb(239, 68, 68)',
-                    };
-
-                    const gradientColors = sportColor.bg.split(' ');
-                    const color1 = colorMap[gradientColors[1]] || 'rgb(59, 130, 246)';
-                    const color2 = colorMap[gradientColors[3]] || 'rgb(34, 211, 238)';
-                    
                     return (
                       <motion.button
                         key={sport.id}
                         onClick={() => handleSportChange(sport.id)}
                         className={`px-6 py-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all duration-300 border-2 relative overflow-hidden group shadow-lg hover:shadow-2xl text-white`}
                         style={{
-                          background: isSelected ? `linear-gradient(135deg, ${color1}, ${color2})` : 'rgba(255,255,255,0.05)',
-                          borderColor: isSelected ? color1 : 'rgba(255,255,255,0.1)',
+                          background: isSelected ? sportColor.gradient : 'rgba(255,255,255,0.05)',
+                          borderColor: isSelected ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.1)',
                           boxShadow: isSelected ? `0 0 30px ${sportColor.glow}` : 'none'
                         }}
                         whileHover={{ scale: 1.05 }}
