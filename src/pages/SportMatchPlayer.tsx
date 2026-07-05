@@ -155,16 +155,16 @@ const SportMatchPlayer = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-white mb-2" />
-        <span className="text-[10px] font-black tracking-widest text-neutral-500 uppercase">FETCHING FEED PARAMS...</span>
+        <span className="text-[10px] font-black tracking-widest text-white/60 uppercase">FETCHING FEED PARAMS...</span>
       </div>
     );
   }
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-black text-neutral-200 antialiased">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-neutral-200 antialiased">
         <Navbar />
 
         <div className="pt-24 pb-16">
@@ -179,7 +179,7 @@ const SportMatchPlayer = () => {
             >
               <motion.button 
                 onClick={() => navigate('/sports')}
-                className="text-neutral-400 hover:text-white px-4 py-2 rounded-xl bg-neutral-950 border border-neutral-900 hover:border-neutral-800 transition-all flex items-center gap-2 text-xs font-black uppercase tracking-wider"
+                className="text-white px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 border border-blue-400/50 hover:border-blue-300 transition-all flex items-center gap-2 text-xs font-black uppercase tracking-wider shadow-lg hover:shadow-xl"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -187,7 +187,7 @@ const SportMatchPlayer = () => {
                 <span>TERMINAL INDEX</span>
               </motion.button>
               
-              <div className="flex items-center gap-2 text-neutral-600 font-mono text-xs">
+              <div className="flex items-center gap-2 text-white/70 font-mono text-xs bg-white/10 px-3 py-2 rounded-lg border border-white/20 backdrop-blur-sm">
                 <Terminal className="h-3.5 w-3.5" />
                 <span>ID: {matchId?.slice(0, 8)}</span>
               </div>
@@ -213,7 +213,7 @@ const SportMatchPlayer = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <div ref={playerRef} className="relative bg-black rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.9)] border border-neutral-900">
+                <div ref={playerRef} className="relative bg-black rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.9)] border border-white/20">
                   <div className="relative aspect-video">
                     {embedUrl ? (
                       <>
@@ -233,20 +233,20 @@ const SportMatchPlayer = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                           >
-                            <Loader2 className="h-6 w-6 animate-spin text-neutral-600" />
+                            <Loader2 className="h-6 w-6 animate-spin text-white/60" />
                           </motion.div>
                         )}
                       </>
                     ) : hasActiveSources && selectedSource ? (
-                      <div className="absolute inset-0 flex items-center justify-center bg-neutral-950">
-                        <p className="text-xs font-black tracking-widest text-neutral-500 uppercase">Awaiting Node Routing Confirmation</p>
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+                        <p className="text-xs font-black tracking-widest text-white/60 uppercase">Awaiting Node Routing Confirmation</p>
                       </div>
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-neutral-950">
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
                         <div className="text-center p-6">
-                          <Signal className="h-6 w-6 text-neutral-700 mx-auto mb-2" />
+                          <Signal className="h-6 w-6 text-white/50 mx-auto mb-2" />
                           <p className="text-white font-bold text-xs uppercase tracking-wider mb-4">No feeds active for this entry</p>
-                          <Button onClick={handleRefresh} size="sm" className="bg-neutral-900 border border-neutral-800 text-xs font-bold uppercase tracking-wider">
+                          <Button onClick={handleRefresh} size="sm" className="bg-gradient-to-r from-blue-600 to-blue-500 border border-blue-400/50 text-white text-xs font-bold uppercase tracking-wider hover:from-blue-500 hover:to-blue-400">
                             Sync Signals
                           </Button>
                         </div>
@@ -257,25 +257,25 @@ const SportMatchPlayer = () => {
                   {/* Strip Interface Controls */}
                   {embedUrl && (
                     <motion.div 
-                      className="flex items-center justify-between px-4 py-3 bg-neutral-950 border-t border-neutral-900 text-xs font-bold tracking-wide uppercase"
+                      className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-white/10 to-white/5 border-t border-white/20 text-xs font-bold tracking-wide uppercase backdrop-blur-sm"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: 0.2 }}
                     >
-                      <div className="flex items-center gap-2 text-neutral-400">
+                      <div className="flex items-center gap-2 text-white/80">
                         <motion.span 
-                          className="w-2 h-2 rounded-full bg-red-500"
+                          className="w-2 h-2 rounded-full bg-gradient-to-r from-red-500 to-red-400"
                           animate={{ scale: [1, 1.3, 1] }}
                           transition={{ duration: 1, repeat: Infinity }}
                         />
                         <span>
                           NODE: <span className="text-white">{selectedSource}</span>
-                          <span className="text-neutral-600 ml-2 font-mono lowercase">
+                          <span className="text-white/60 ml-2 font-mono lowercase">
                             • stream_idx_{currentStream?.streamNo}
                           </span>
                         </span>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={toggleFullscreen} className="h-8 w-8 p-0 text-neutral-500 hover:text-white">
+                      <Button variant="ghost" size="sm" onClick={toggleFullscreen} className="h-8 w-8 p-0 text-white/60 hover:text-white">
                         {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
                       </Button>
                     </motion.div>
@@ -285,41 +285,41 @@ const SportMatchPlayer = () => {
                 {/* Info Center Banner */}
                 {matchInfo && (
                   <motion.div 
-                    className="bg-gradient-to-r from-neutral-950 to-neutral-900 rounded-2xl p-6 border border-neutral-800 space-y-4"
+                    className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-2xl p-6 border border-white/20 space-y-4 backdrop-blur-sm"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                   >
                     <div>
-                      <span className="text-[10px] font-black tracking-widest text-indigo-400 uppercase bg-neutral-900 px-2 py-1 rounded border border-neutral-800">
+                      <span className="text-[10px] font-black tracking-widest text-white/90 uppercase bg-gradient-to-r from-purple-500/30 to-pink-500/30 px-2 py-1 rounded border border-white/20 backdrop-blur-sm inline-block">
                         {matchInfo.category}
                       </span>
-                      <h1 className="text-2xl font-black text-white uppercase tracking-tight mt-3">{matchInfo.title}</h1>
-                      <div className="flex items-center gap-2 mt-2 text-neutral-500 text-xs font-bold uppercase tracking-wider">
+                      <h1 className="text-2xl font-black text-white uppercase tracking-tight mt-3 drop-shadow-lg">{matchInfo.title}</h1>
+                      <div className="flex items-center gap-2 mt-2 text-white/70 text-xs font-bold uppercase tracking-wider">
                         <Clock className="h-3.5 w-3.5" />
                         <span>{format(new Date(matchInfo.date), "MMM d, yyyy • h:mm a")}</span>
                       </div>
                     </div>
 
                     {matchInfo.teams && (
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-neutral-900/40 rounded-xl p-4 border border-neutral-800 gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white/10 rounded-xl p-4 border border-white/20 gap-4 backdrop-blur-sm">
                         <div className="flex items-center gap-6">
                           <div className="flex items-center gap-2">
                             <img
                               src={`https://streamed.pk/api/images/badge/${matchInfo.teams.home.badge?.replace(/\.(webp|png|jpg|jpeg)$/i, '')}.webp`}
-                              className="w-7 h-7 object-contain"
+                              className="w-7 h-7 object-contain drop-shadow-lg"
                               onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
                               alt=""
                             />
                             <span className="text-white font-black text-xs uppercase tracking-wider">{matchInfo.teams.home.name}</span>
                           </div>
                           
-                          <span className="text-[9px] font-black text-neutral-600 tracking-widest">VS</span>
+                          <span className="text-[9px] font-black text-white/60 tracking-widest">VS</span>
                           
                           <div className="flex items-center gap-2">
                             <img
                               src={`https://streamed.pk/api/images/badge/${matchInfo.teams.away.badge?.replace(/\.(webp|png|jpg|jpeg)$/i, '')}.webp`}
-                              className="w-7 h-7 object-contain"
+                              className="w-7 h-7 object-contain drop-shadow-lg"
                               onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
                               alt=""
                             />
@@ -328,8 +328,8 @@ const SportMatchPlayer = () => {
                         </div>
 
                         {matchInfo.popular && (
-                          <Badge style={{ backgroundColor: userPreferences?.accentColor || 'hsl(var(--accent))' }} className="text-white font-black text-[9px] tracking-widest px-2 py-1 rounded-md border-none uppercase">
-                            POPULAR
+                          <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white font-black text-[9px] tracking-widest px-2 py-1 rounded-md border-none uppercase drop-shadow-lg">
+                            ⭐ POPULAR
                           </Badge>
                         )}
                       </div>
@@ -339,36 +339,36 @@ const SportMatchPlayer = () => {
 
                 {/* Routing Station - NOW BELOW PLAYER */}
                 <motion.div 
-                  className="bg-gradient-to-br from-neutral-950 to-neutral-900 p-6 rounded-2xl border border-neutral-800 space-y-6"
+                  className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 p-6 rounded-2xl border border-white/20 space-y-6 backdrop-blur-sm"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.3 }}
                 >
                   <div>
-                    <h3 className="text-xs font-black text-white tracking-widest uppercase mb-1 flex items-center gap-2">
-                      <Wifi className="h-4 w-4 text-indigo-400" />
+                    <h3 className="text-xs font-black text-white tracking-widest uppercase mb-1 flex items-center gap-2 drop-shadow-lg">
+                      <Wifi className="h-4 w-4 text-cyan-400" />
                       ROUTING STATION
                     </h3>
-                    <p className="text-[11px] text-neutral-500 font-medium tracking-wide uppercase">Toggle channels below if transmission lag hits frames.</p>
+                    <p className="text-[11px] text-white/70 font-medium tracking-wide uppercase">Toggle channels below if transmission lag hits frames.</p>
                   </div>
 
                   {/* Server Dropdown Element */}
                   {hasActiveSources && (
                     <div className="space-y-2">
-                      <label className="block text-neutral-500 text-[10px] font-black uppercase tracking-widest">Active Server Profile</label>
+                      <label className="block text-white/70 text-[10px] font-black uppercase tracking-widest">Active Server Profile</label>
                       <div className="relative" ref={sourceDropdownRef}>
                         <motion.button
                           onClick={() => setShowSourceDropdown(!showSourceDropdown)}
-                          className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-neutral-900 border border-neutral-800/80 hover:bg-neutral-900 transition-all text-left"
+                          className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/10 border-2 border-white/20 hover:border-white/30 hover:bg-white/15 transition-all text-left backdrop-blur-sm"
                           whileHover={{ scale: 1.02 }}
                         >
                           <div className="flex items-center gap-2.5">
-                            <Wifi className="h-4 w-4 text-indigo-400" />
+                            <Wifi className="h-4 w-4 text-cyan-400" />
                             <span className="text-white text-xs font-black uppercase tracking-widest">
                               {selectedSource ? selectedSource : 'Select Server Node'}
                             </span>
                           </div>
-                          <ChevronDown className={`h-4 w-4 text-neutral-500 transition-transform duration-300 ${showSourceDropdown ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`h-4 w-4 text-white/60 transition-transform duration-300 ${showSourceDropdown ? 'rotate-180' : ''}`} />
                         </motion.button>
                         
                         <AnimatePresence>
@@ -377,7 +377,7 @@ const SportMatchPlayer = () => {
                               initial={{ opacity: 0, y: -4 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -4 }}
-                              className="absolute top-full left-0 mt-2 w-full bg-neutral-900 rounded-xl border border-neutral-800 shadow-3xl z-50 overflow-hidden"
+                              className="absolute top-full left-0 mt-2 w-full bg-gradient-to-br from-white/20 to-white/10 rounded-xl border border-white/30 shadow-3xl z-50 overflow-hidden backdrop-blur-sm"
                             >
                               {activeSources.map((sourceInfo) => {
                                 const isSelected = selectedSource === sourceInfo.source;
@@ -385,11 +385,11 @@ const SportMatchPlayer = () => {
                                   <motion.button
                                     key={sourceInfo.source}
                                     onClick={() => handleSourceChange(sourceInfo)}
-                                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-neutral-800 transition-all text-left border-b border-neutral-950/40"
+                                    className={`w-full flex items-center justify-between px-4 py-3 transition-all text-left border-b border-white/10 ${isSelected ? 'bg-white/20' : 'hover:bg-white/10'}`}
                                     whileHover={{ x: 4 }}
                                   >
-                                    <span className="text-neutral-200 text-xs font-black uppercase tracking-wider">{sourceInfo.source}</span>
-                                    {isSelected && <Check className="h-4 w-4 text-indigo-400" />}
+                                    <span className="text-white text-xs font-black uppercase tracking-wider">{sourceInfo.source}</span>
+                                    {isSelected && <Check className="h-4 w-4 text-cyan-400" />}
                                   </motion.button>
                                 );
                               })}
@@ -403,7 +403,7 @@ const SportMatchPlayer = () => {
                   {/* Multi-channel Subchannel buttons layout */}
                   {selectedSource && currentStreams.length > 1 && (
                     <div className="space-y-2">
-                      <label className="block text-neutral-500 text-[10px] font-black uppercase tracking-widest">Sub-Link Channel Indices</label>
+                      <label className="block text-white/70 text-[10px] font-black uppercase tracking-widest">Sub-Link Channel Indices</label>
                       <div className="grid grid-cols-2 gap-2">
                         {currentStreams.map((stream) => {
                           const isSelected = selectedStreamNo === stream.streamNo;
@@ -411,14 +411,11 @@ const SportMatchPlayer = () => {
                             <motion.button
                               key={stream.streamNo}
                               onClick={() => handleStreamChange(stream.streamNo)}
-                              className={`px-3 py-2.5 rounded-xl transition-all duration-200 flex flex-col gap-1 text-left border ${
+                              className={`px-3 py-2.5 rounded-xl transition-all duration-200 flex flex-col gap-1 text-left border-2 ${
                                 isSelected 
-                                  ? 'text-white border-transparent shadow-md font-bold' 
-                                  : 'bg-neutral-900 text-neutral-400 border-neutral-800/80 text-xs'
+                                  ? 'text-white border-white/40 shadow-md font-bold bg-gradient-to-r from-cyan-500/30 to-blue-500/30' 
+                                  : 'bg-white/10 text-white/70 border-white/20 text-xs hover:bg-white/15 hover:border-white/30'
                               }`}
-                              style={{ 
-                                backgroundColor: isSelected ? userPreferences?.accentColor || 'hsl(var(--accent))' : undefined,
-                              }}
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                             >
@@ -435,13 +432,12 @@ const SportMatchPlayer = () => {
                   )}
 
                   <motion.div 
-                    className="pt-2 border-t border-neutral-800"
+                    className="pt-2 border-t border-white/20"
                     whileHover={{ scale: 1.02 }}
                   >
                     <Button
-                      variant="outline"
                       onClick={handleRefresh}
-                      className="w-full border-neutral-800 text-neutral-400 bg-neutral-900/40 hover:bg-neutral-900 text-xs font-black uppercase tracking-widest h-11 rounded-xl"
+                      className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 border border-cyan-400/50 text-white text-xs font-black uppercase tracking-widest h-11 rounded-xl hover:from-cyan-500 hover:to-blue-500 shadow-lg"
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
                       POLL STREAMS

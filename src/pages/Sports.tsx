@@ -27,6 +27,22 @@ const Sports = () => {
   const { userPreferences } = useUserPreferences();
   const accentColor = userPreferences?.accentColor || 'hsl(var(--accent))';
 
+  // Vibrant color palette for sports
+  const sportColors: { [key: string]: { bg: string; border: string; text: string; glow: string } } = {
+    all: { bg: 'from-blue-600 to-cyan-500', border: 'border-blue-400', text: 'text-blue-100', glow: 'rgba(59, 130, 246, 0.3)' },
+    football: { bg: 'from-green-600 to-emerald-500', border: 'border-green-400', text: 'text-green-100', glow: 'rgba(34, 197, 94, 0.3)' },
+    basketball: { bg: 'from-orange-600 to-amber-500', border: 'border-orange-400', text: 'text-orange-100', glow: 'rgba(234, 88, 12, 0.3)' },
+    tennis: { bg: 'from-yellow-500 to-lime-500', border: 'border-yellow-400', text: 'text-yellow-100', glow: 'rgba(234, 179, 8, 0.3)' },
+    cricket: { bg: 'from-blue-500 to-indigo-600', border: 'border-blue-400', text: 'text-blue-100', glow: 'rgba(99, 102, 241, 0.3)' },
+    hockey: { bg: 'from-red-600 to-pink-500', border: 'border-red-400', text: 'text-red-100', glow: 'rgba(220, 38, 38, 0.3)' },
+    volleyball: { bg: 'from-purple-600 to-pink-500', border: 'border-purple-400', text: 'text-purple-100', glow: 'rgba(147, 51, 234, 0.3)' },
+    baseball: { bg: 'from-red-500 to-orange-600', border: 'border-red-400', text: 'text-red-100', glow: 'rgba(239, 68, 68, 0.3)' },
+  };
+
+  const getColorForSport = (sportId: string) => {
+    return sportColors[sportId] || sportColors.all;
+  };
+
   const {
     data: sportsList = [],
     isLoading: sportsLoading,
@@ -141,72 +157,71 @@ const Sports = () => {
   };
 
   const liveCount = liveMatches.length;
+  const selectedColor = getColorForSport(selectedSport);
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-black text-neutral-100 font-sans antialiased selection:bg-neutral-800">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-neutral-100 font-sans antialiased selection:bg-neutral-800">
         <Navbar />
         <div className="pt-28 pb-20">
           <div className="container mx-auto px-4 md:px-8 max-w-7xl">
             
-            {/* Immersive Dashboard Header with Enhanced Effects */}
+            {/* Immersive Dashboard Header with Vibrant Gradient */}
             <motion.div 
-              className="mb-12 relative overflow-hidden rounded-2xl"
+              className="mb-12 relative overflow-hidden rounded-3xl"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              {/* Animated Background Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 via-transparent to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              {/* Animated Gradient Background */}
+              <div className={`absolute inset-0 bg-gradient-to-r ${selectedColor.bg} opacity-90`} />
               
-              {/* Animated Border */}
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-transparent to-indigo-500 opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
+              {/* Animated Overlay Pattern */}
+              <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/5" />
               
-              <div className="relative border-l-4 pl-6 border-indigo-500 py-6 px-8 bg-gradient-to-r from-neutral-950/60 to-neutral-900/30 rounded-r-2xl backdrop-blur-sm border border-neutral-800">
-                {/* Animated Background Icon */}
-                <motion.div 
-                  className="absolute top-0 right-0 p-8 opacity-5"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                >
-                  <Activity className="h-40 w-40 text-white" />
-                </motion.div>
+              {/* Animated Background Icon */}
+              <motion.div 
+                className="absolute top-0 right-0 p-8 opacity-15"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              >
+                <Activity className="h-40 w-40 text-white" />
+              </motion.div>
 
-                {/* Content */}
-                <div className="relative z-10">
-                  <motion.h1 
-                    className="text-5xl md:text-6xl font-black tracking-tight text-white uppercase"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, delay: 0.1 }}
-                  >
-                    BROADCAST <span className="text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 bg-clip-text">CENTER</span>
-                  </motion.h1>
-                  <motion.p 
-                    className="text-neutral-400 text-sm md:text-base font-medium tracking-wide mt-2"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                  >
-                    Select an arena profile below to tap into global live streams.
-                    {liveCount > 0 && (
-                      <span className="ml-3 inline-flex items-center gap-1.5 text-red-400 font-bold">
-                        <motion.span 
-                          className="w-2 h-2 rounded-full bg-red-500"
-                          animate={{ scale: [1, 1.3, 1] }}
-                          transition={{ duration: 1, repeat: Infinity }}
-                        />
-                        {liveCount} LIVE NOW
-                      </span>
-                    )}
-                  </motion.p>
-                </div>
+              {/* Content */}
+              <div className="relative z-10 px-8 py-8">
+                <motion.h1 
+                  className="text-5xl md:text-6xl font-black tracking-tight text-white uppercase drop-shadow-lg"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                >
+                  BROADCAST <span className="text-white drop-shadow-xl">CENTER</span>
+                </motion.h1>
+                <motion.p 
+                  className="text-white/90 text-sm md:text-base font-bold tracking-wide mt-3 drop-shadow-md"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                  Select an arena profile below to tap into global live streams.
+                  {liveCount > 0 && (
+                    <span className="ml-3 inline-flex items-center gap-1.5 text-white font-black">
+                      <motion.span 
+                        className="w-2 h-2 rounded-full bg-white"
+                        animate={{ scale: [1, 1.3, 1] }}
+                        transition={{ duration: 1, repeat: Infinity }}
+                      />
+                      {liveCount} LIVE NOW
+                    </span>
+                  )}
+                </motion.p>
               </div>
             </motion.div>
 
-            {/* Premium Category Strips with Enhanced Styling */}
+            {/* Premium Category Strips with Colorful Buttons */}
             <motion.div 
-              className="mb-8 border-b border-neutral-800/60 pb-4 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent"
+              className="mb-8 border-b border-white/10 pb-4 overflow-x-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -214,13 +229,12 @@ const Sports = () => {
               <div className="flex gap-3 min-w-max px-1">
                 <motion.button
                   onClick={() => handleSportChange('all')}
-                  className={`px-6 py-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all duration-300 border relative overflow-hidden group ${
-                    selectedSport === 'all' 
-                      ? 'text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.15)]' 
-                      : 'text-neutral-400 hover:text-white bg-neutral-950 border-neutral-800 hover:border-neutral-700'
-                  }`}
+                  className={`px-6 py-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all duration-300 border-2 relative overflow-hidden group shadow-lg hover:shadow-2xl`}
                   style={{
-                    backgroundColor: selectedSport === 'all' ? 'white' : undefined,
+                    background: selectedSport === 'all' ? `linear-gradient(135deg, rgb(59, 130, 246), rgb(34, 211, 238))` : 'rgba(255,255,255,0.1)',
+                    borderColor: selectedSport === 'all' ? 'rgb(147, 197, 253)' : 'rgba(255,255,255,0.2)',
+                    color: selectedSport === 'all' ? 'white' : 'rgba(255,255,255,0.7)',
+                    boxShadow: selectedSport === 'all' ? '0 0 30px rgba(59, 130, 246, 0.4)' : 'none'
                   }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -233,35 +247,37 @@ const Sports = () => {
                     {[1, 2, 3, 4].map((i) => (
                       <motion.div 
                         key={i} 
-                        className="w-32 h-11 rounded-xl bg-neutral-900 border border-neutral-800"
+                        className="w-32 h-11 rounded-xl bg-gradient-to-r from-white/10 to-white/5 border border-white/20"
                         animate={{ opacity: [0.5, 1, 0.5] }}
                         transition={{ duration: 1.5, repeat: Infinity }}
                       />
                     ))}
                   </div>
                 ) : (
-                  sportsList.map((sport: Sport, index) => (
-                    <motion.button
-                      key={sport.id}
-                      onClick={() => handleSportChange(sport.id)}
-                      className={`px-6 py-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all duration-300 border relative overflow-hidden group ${
-                        selectedSport === sport.id 
-                          ? 'text-white border-transparent shadow-lg' 
-                          : 'text-neutral-400 hover:text-white bg-neutral-950 border-neutral-800 hover:border-neutral-700'
-                      }`}
-                      style={{ 
-                        backgroundColor: selectedSport === sport.id ? accentColor : undefined,
-                        boxShadow: selectedSport === sport.id ? `0 0 25px ${accentColor}33` : undefined
-                      }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: index * 0.05 }}
-                    >
-                      {sport.name}
-                    </motion.button>
-                  ))
+                  sportsList.map((sport: Sport, index) => {
+                    const sportColor = getColorForSport(sport.id);
+                    const isSelected = selectedSport === sport.id;
+                    return (
+                      <motion.button
+                        key={sport.id}
+                        onClick={() => handleSportChange(sport.id)}
+                        className={`px-6 py-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all duration-300 border-2 relative overflow-hidden group shadow-lg hover:shadow-2xl`}
+                        style={{
+                          background: isSelected ? `linear-gradient(135deg, ${sportColor.bg.split(' ')[1]}, ${sportColor.bg.split(' ')[3]})` : 'rgba(255,255,255,0.1)',
+                          borderColor: isSelected ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)',
+                          color: isSelected ? 'white' : 'rgba(255,255,255,0.7)',
+                          boxShadow: isSelected ? `0 0 30px ${sportColor.glow}` : 'none'
+                        }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: index * 0.05 }}
+                      >
+                        {sport.name}
+                      </motion.button>
+                    );
+                  })
                 )}
               </div>
             </motion.div>
@@ -269,31 +285,31 @@ const Sports = () => {
             {/* High-Contrast Integrated Action Deck */}
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full space-y-8">
               <motion.div 
-                className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-gradient-to-r from-neutral-950 to-neutral-900 p-4 rounded-2xl border border-neutral-800 shadow-3xl"
+                className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-gradient-to-r from-white/10 to-white/5 p-4 rounded-2xl border border-white/20 shadow-2xl backdrop-blur-sm"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <TabsList className="grid grid-cols-3 bg-neutral-900/60 p-1 rounded-xl w-full md:w-[420px] h-12 border border-neutral-800/40">
-                  <TabsTrigger value="popular" className="rounded-lg gap-2 text-neutral-400 data-[state=active]:bg-neutral-800 data-[state=active]:text-white font-bold text-xs uppercase tracking-wider transition-all">
-                    <Flame className="h-3.5 w-3.5 text-amber-400" /> Hot
+                <TabsList className="grid grid-cols-3 bg-white/10 p-1 rounded-xl w-full md:w-[420px] h-12 border border-white/20 backdrop-blur-sm">
+                  <TabsTrigger value="popular" className="rounded-lg gap-2 text-white/70 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white font-bold text-xs uppercase tracking-wider transition-all">
+                    <Flame className="h-3.5 w-3.5" /> Hot
                   </TabsTrigger>
-                  <TabsTrigger value="live" className="rounded-lg gap-2 text-neutral-400 data-[state=active]:bg-neutral-800 data-[state=active]:text-white font-bold text-xs uppercase tracking-wider transition-all">
+                  <TabsTrigger value="live" className="rounded-lg gap-2 text-white/70 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-pink-500 data-[state=active]:text-white font-bold text-xs uppercase tracking-wider transition-all">
                     <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1, repeat: Infinity }}>
-                      <Radio className="h-3.5 w-3.5 text-red-500" />
+                      <Radio className="h-3.5 w-3.5" />
                     </motion.div> Live
                   </TabsTrigger>
-                  <TabsTrigger value="all" className="rounded-lg gap-2 text-neutral-400 data-[state=active]:bg-neutral-800 data-[state=active]:text-white font-bold text-xs uppercase tracking-wider transition-all">
-                    <CalendarDays className="h-3.5 w-3.5 text-indigo-400" /> Cards
+                  <TabsTrigger value="all" className="rounded-lg gap-2 text-white/70 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white font-bold text-xs uppercase tracking-wider transition-all">
+                    <CalendarDays className="h-3.5 w-3.5" /> Cards
                   </TabsTrigger>
                 </TabsList>
 
                 <div className="relative w-full md:w-96 group">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50 group-focus-within:text-white transition-colors" />
                   <input
                     type="text"
                     placeholder="FILTER BY TEAM, LEAGUE OR TOURNAMENT..."
-                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-neutral-900 text-white border border-neutral-800 focus:border-indigo-500 focus:outline-none focus:shadow-[0_0_20px_rgba(99,102,241,0.2)] text-xs font-bold tracking-wider uppercase placeholder:text-neutral-600 transition-all duration-300"
+                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/10 text-white border-2 border-white/20 focus:border-white/40 focus:outline-none focus:shadow-[0_0_20px_rgba(255,255,255,0.2)] text-xs font-bold tracking-wider uppercase placeholder:text-white/40 transition-all duration-300 backdrop-blur-sm"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -313,7 +329,7 @@ const Sports = () => {
                       {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                         <motion.div 
                           key={i} 
-                          className="aspect-video rounded-2xl bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800"
+                          className="aspect-video rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 backdrop-blur-sm"
                           animate={{ opacity: [0.5, 1, 0.5] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
                         />

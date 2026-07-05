@@ -15,6 +15,21 @@ interface SportMatchCardProps {
   className?: string;
 }
 
+// Vibrant color palette for different sports/categories
+const getCardGradient = (category: string, index: number) => {
+  const gradients = [
+    'from-blue-600 to-cyan-500',
+    'from-purple-600 to-pink-500',
+    'from-green-600 to-emerald-500',
+    'from-orange-600 to-red-500',
+    'from-indigo-600 to-blue-500',
+    'from-rose-600 to-pink-500',
+    'from-amber-600 to-yellow-500',
+    'from-teal-600 to-cyan-500',
+  ];
+  return gradients[index % gradients.length];
+};
+
 const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
   const { userPreferences } = useUserPreferences();
   const accentColor = userPreferences?.accentColor || 'hsl(var(--accent))';
@@ -28,6 +43,9 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
   const isUpcoming = matchTimestamp > now;
   const matchId = match.id;
   
+  // Determine gradient based on match properties
+  const gradientClass = getCardGradient(match.category, match.id.charCodeAt(0));
+  
   return (
     <Link
       to={`/sports/player/${matchId}`}
@@ -38,15 +56,14 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Card className="overflow-hidden bg-gradient-to-br from-neutral-950 to-neutral-900 border border-neutral-800 group-hover:border-neutral-700 h-full shadow-2xl flex flex-col justify-between rounded-2xl transition-all duration-300 group-hover:shadow-[0_0_40px_rgba(0,0,0,0.9)]">
+      <Card className={`overflow-hidden bg-gradient-to-br ${gradientClass} h-full shadow-2xl flex flex-col justify-between rounded-2xl transition-all duration-300 group-hover:shadow-[0_0_40px_rgba(0,0,0,0.6)] border border-white/20`}>
         
         {/* Dynamic Canvas Area with Enhanced Effects */}
-        <div className="relative aspect-[16/10] bg-neutral-900 flex items-center justify-center p-4 border-b border-neutral-800 overflow-hidden">
-          {/* Animated Background Gradient */}
+        <div className="relative aspect-[16/10] bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center p-4 border-b border-white/20 overflow-hidden">
+          {/* Animated Background Gradient Overlay */}
           <motion.div
-            className="absolute inset-0 opacity-0 group-hover:opacity-100"
-            style={{ backgroundColor: accentColor }}
-            animate={isHovered ? { opacity: 0.05 } : { opacity: 0 }}
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-br from-white/10 to-transparent"
+            animate={isHovered ? { opacity: 0.15 } : { opacity: 0 }}
             transition={{ duration: 0.4 }}
           />
           
@@ -55,15 +72,15 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
               <img
                 src={getMatchPosterUrl(match.poster)}
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover opacity-25 blur-sm scale-110 group-hover:scale-105 transition-all duration-500"
+                className="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-110 group-hover:scale-105 transition-all duration-500"
                 loading="lazy"
               />
               {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/50 to-transparent z-5" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent z-5" />
             </>
           )}
           
-          <div className="absolute inset-0 bg-neutral-950/30 z-0" />
+          <div className="absolute inset-0 bg-black/20 z-0" />
 
           {/* Versus Interface with Enhanced Styling */}
           {match.teams ? (
@@ -75,26 +92,26 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
               {/* Home Team */}
               <div className="flex flex-col items-center text-center w-[45%]">
                 <motion.div 
-                  className="w-16 h-16 rounded-xl bg-gradient-to-br from-neutral-800 to-black border-2 border-neutral-700 p-2.5 flex items-center justify-center shadow-lg group-hover:border-neutral-600 transition-all duration-300 relative"
-                  animate={isHovered ? { y: -4, boxShadow: `0 8px 20px ${accentColor}20` } : { y: 0 }}
+                  className="w-16 h-16 rounded-xl bg-gradient-to-br from-white/30 to-white/10 border-2 border-white/40 p-2.5 flex items-center justify-center shadow-lg group-hover:border-white/60 transition-all duration-300 relative backdrop-blur-sm"
+                  animate={isHovered ? { y: -4, boxShadow: `0 8px 20px rgba(255,255,255,0.2)` } : { y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
                   <img
                     src={getTeamBadgeUrl(match.teams.home.badge)}
                     alt=""
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain drop-shadow-lg"
                     loading="lazy"
                     onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
                   />
                 </motion.div>
-                <span className="text-xs font-black text-white truncate w-full mt-2 tracking-wide uppercase group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-neutral-400 group-hover:bg-clip-text transition-all duration-300">
+                <span className="text-xs font-black text-white truncate w-full mt-2 tracking-wide uppercase drop-shadow-lg group-hover:text-yellow-100 transition-all duration-300">
                   {match.teams.home.name}
                 </span>
               </div>
 
               {/* VS Badge */}
               <motion.div 
-                className="text-[10px] font-black tracking-widest text-white bg-gradient-to-r from-neutral-800 to-black px-2 py-1 rounded border border-neutral-700"
+                className="text-[10px] font-black tracking-widest text-white bg-gradient-to-r from-white/30 to-white/10 px-2 py-1 rounded border border-white/40 backdrop-blur-sm drop-shadow-lg"
                 animate={isHovered ? { scale: 1.1, rotate: 360 } : { scale: 1, rotate: 0 }}
                 transition={{ duration: 0.5 }}
               >
@@ -104,27 +121,27 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
               {/* Away Team */}
               <div className="flex flex-col items-center text-center w-[45%]">
                 <motion.div 
-                  className="w-16 h-16 rounded-xl bg-gradient-to-br from-neutral-800 to-black border-2 border-neutral-700 p-2.5 flex items-center justify-center shadow-lg group-hover:border-neutral-600 transition-all duration-300 relative"
-                  animate={isHovered ? { y: -4, boxShadow: `0 8px 20px ${accentColor}20` } : { y: 0 }}
+                  className="w-16 h-16 rounded-xl bg-gradient-to-br from-white/30 to-white/10 border-2 border-white/40 p-2.5 flex items-center justify-center shadow-lg group-hover:border-white/60 transition-all duration-300 relative backdrop-blur-sm"
+                  animate={isHovered ? { y: -4, boxShadow: `0 8px 20px rgba(255,255,255,0.2)` } : { y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
                   <img
                     src={getTeamBadgeUrl(match.teams.away.badge)}
                     alt=""
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain drop-shadow-lg"
                     loading="lazy"
                     onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
                   />
                 </motion.div>
-                <span className="text-xs font-black text-white truncate w-full mt-2 tracking-wide uppercase group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-neutral-400 group-hover:bg-clip-text transition-all duration-300">
+                <span className="text-xs font-black text-white truncate w-full mt-2 tracking-wide uppercase drop-shadow-lg group-hover:text-yellow-100 transition-all duration-300">
                   {match.teams.away.name}
                 </span>
               </div>
             </motion.div>
           ) : (
             <div className="relative z-10 text-center">
-              <ShieldAlert className="h-8 w-8 text-neutral-700 mx-auto mb-1" />
-              <span className="text-[10px] font-black tracking-widest text-neutral-400 bg-neutral-900 px-2 py-1 rounded uppercase">{match.category}</span>
+              <ShieldAlert className="h-8 w-8 text-white drop-shadow-lg mx-auto mb-1" />
+              <span className="text-[10px] font-black tracking-widest text-white bg-white/20 px-2 py-1 rounded uppercase backdrop-blur-sm drop-shadow-lg">{match.category}</span>
             </div>
           )}
 
@@ -135,16 +152,16 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               >
-                <Badge className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-600 hover:to-red-700 text-[9px] font-black tracking-widest px-2 py-0.5 rounded border border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.6)]">
+                <Badge className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-500 hover:to-red-600 text-[9px] font-black tracking-widest px-2 py-0.5 rounded border border-white/40 shadow-[0_0_15px_rgba(239,68,68,0.6)] text-white drop-shadow-lg">
                   🔴 LIVE
                 </Badge>
               </motion.div>
             ) : isUpcoming ? (
-              <Badge className="bg-neutral-800 text-neutral-300 hover:bg-neutral-800 text-[9px] font-black tracking-widest px-2 py-0.5 rounded border border-neutral-700">
+              <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-500 hover:to-blue-600 text-[9px] font-black tracking-widest px-2 py-0.5 rounded border border-white/40 drop-shadow-lg">
                 ⏱️ PENDING
               </Badge>
             ) : match.popular ? (
-              <Badge style={{ background: accentColor }} className="text-[9px] font-black tracking-widest px-2 py-0.5 rounded border-none shadow-md">
+              <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white text-[9px] font-black tracking-widest px-2 py-0.5 rounded border border-white/40 shadow-md drop-shadow-lg">
                 ⭐ TOP
               </Badge>
             ) : null}
@@ -153,9 +170,9 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
             {match.sources && match.sources.length > 0 && (
               <motion.div
                 animate={isHovered ? { scale: 1.05 } : { scale: 1 }}
-                className="bg-neutral-900/80 backdrop-blur-sm text-[9px] font-black tracking-widest px-2 py-0.5 rounded border border-neutral-700 text-neutral-300 flex items-center gap-1"
+                className="bg-white/20 backdrop-blur-sm text-[9px] font-black tracking-widest px-2 py-0.5 rounded border border-white/40 text-white flex items-center gap-1 drop-shadow-lg"
               >
-                <Zap className="h-3 w-3 text-amber-400" />
+                <Zap className="h-3 w-3 text-yellow-300" />
                 {match.sources.length}
               </motion.div>
             )}
@@ -163,20 +180,20 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
         </div>
 
         {/* Info Deck with Enhanced Typography */}
-        <CardContent className="p-4 bg-gradient-to-b from-neutral-950 to-neutral-900 flex-grow flex flex-col justify-between">
+        <CardContent className="p-4 bg-gradient-to-b from-white/10 to-white/5 flex-grow flex flex-col justify-between backdrop-blur-sm">
           <div>
-            <div className="text-[9px] font-black tracking-widest text-indigo-400 uppercase mb-1 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }} />
+            <div className="text-[9px] font-black tracking-widest text-white/90 uppercase mb-1 flex items-center gap-1 drop-shadow-lg">
+              <span className="w-1.5 h-1.5 rounded-full bg-white/70" />
               {match.league || match.category}
             </div>
-            <h3 className="font-bold text-sm text-neutral-200 group-hover:text-white line-clamp-2 tracking-wide transition-colors duration-300">
+            <h3 className="font-bold text-sm text-white line-clamp-2 tracking-wide transition-colors duration-300 drop-shadow-lg">
               {match.title}
             </h3>
           </div>
 
           {/* Bottom Stats Bar with Hover Effects */}
           <motion.div 
-            className="mt-4 pt-3 border-t border-neutral-800 flex justify-between items-center text-[10px] font-bold text-neutral-500 tracking-wide uppercase"
+            className="mt-4 pt-3 border-t border-white/20 flex justify-between items-center text-[10px] font-bold text-white/80 tracking-wide uppercase"
             animate={isHovered ? { y: -2 } : { y: 0 }}
             transition={{ duration: 0.3 }}
           >
@@ -187,9 +204,9 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 1, repeat: Infinity }}
                   >
-                    <Radio className="h-3 w-3 text-red-500" />
+                    <Radio className="h-3 w-3 text-red-300" />
                   </motion.div>
-                  <span className="text-red-400">Live Now</span>
+                  <span className="text-red-100">Live Now</span>
                 </>
               ) : (
                 <>
@@ -200,7 +217,7 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
             </div>
 
             <motion.div 
-              className="bg-neutral-900 text-neutral-400 px-2 py-0.5 rounded font-mono text-[9px] border border-neutral-700/60 flex items-center gap-1 group-hover:border-neutral-600 transition-all"
+              className="bg-white/20 text-white/90 px-2 py-0.5 rounded font-mono text-[9px] border border-white/30 flex items-center gap-1 group-hover:border-white/50 transition-all backdrop-blur-sm drop-shadow-lg"
               animate={isHovered ? { scale: 1.05 } : { scale: 1 }}
             >
               <Eye className="h-3 w-3" />

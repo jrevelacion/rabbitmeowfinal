@@ -20,8 +20,13 @@ const SportMatchGrid = ({ matches, title, emptyMessage = "No matches found." }: 
         transition={{ duration: 0.5 }}
       >
         <div className="inline-block">
-          <Zap className="h-12 w-12 text-neutral-700 mx-auto mb-4 opacity-50" />
-          <p className="text-neutral-600 font-bold uppercase tracking-widest text-xs">{emptyMessage}</p>
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+          >
+            <Zap className="h-12 w-12 text-white/50 mx-auto mb-4 drop-shadow-lg" />
+          </motion.div>
+          <p className="text-white/60 font-bold uppercase tracking-widest text-xs drop-shadow-lg">{emptyMessage}</p>
         </div>
       </motion.div>
     );
@@ -57,12 +62,16 @@ const SportMatchGrid = ({ matches, title, emptyMessage = "No matches found." }: 
     <div className="py-4">
       {title && (
         <motion.h2 
-          className="text-sm font-black tracking-widest text-neutral-400 uppercase mb-8 border-b border-neutral-800 pb-3 flex items-center gap-2"
+          className="text-sm font-black tracking-widest text-white uppercase mb-8 border-b border-white/20 pb-3 flex items-center gap-2 drop-shadow-lg"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+          <motion.span 
+            className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-400"
+            animate={{ scale: [1, 1.3, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
           {title}
         </motion.h2>
       )}
