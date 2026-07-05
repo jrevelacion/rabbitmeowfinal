@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks';
+import { useWatchHistory } from '@/hooks/watch-history';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { getWatchHistoryFromAPI } from '@/services/watch-progress'; // Create this service
 
 interface ContinueWatchingProps {
   maxItems?: number;
@@ -27,37 +27,26 @@ interface ContinuableItem {
 
 const ContinueWatching = ({ maxItems = 20 }: ContinueWatchingProps) => {
   const { user } = useAuth();
+  const { watchHistory, isLoading } = useWatchHistory();
   const [continuableItems, setContinuableItems] = useState<ContinuableItem[]>([]);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const rowRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Load continue watching items from watchHistory
-  const loadContinueWatchingItems = async () => {
-    if (!user) {
+  // Convert watch history items to continuable items
+  useEffect(() => {
+    if (!user || !watchHistory || watchHistory.length === 0) {
       setContinuableItems([]);
-      setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
-    
     try {
-      console.log('Fetching Continue Watching from watchHistory...');
-      const watchHistory = await getWatchHistoryFromAPI(50, 0); // Get last 50 items
-      console.log('Watch History response:', watchHistory);
-
-      if (!watchHistory || !watchHistory.items || watchHistory.items.length === 0) {
-        console.log('No watch history found');
-        setContinuableItems([]);
-        return;
-      }
+      console.log('Processing watch history for continue watching:', watchHistory);
 
       // Convert watchHistory items to ContinuableItem format
-      const continuableItems = watchHistory.items
+      const continuableItems = watchHistory
         .filter(item => 
           item.duration > 0 && 
           item.watch_position > 0 &&
@@ -66,11 +55,11 @@ const ContinueWatching = ({ maxItems = 20 }: ContinueWatchingProps) => {
         .map(item => {
           const percentage = (item.watch_position / item.duration) * 100;
           return {
-            media_id: item.media_id,
+            media_id: item.media_id.toString(),
             title: item.title || '',
             backdrop_path: item.backdrop_path || '',
             poster_path: item.poster_path || '',
-            media_type: item.media_type,
+            media_type: item.media_type as 'movie' | 'tv',
             overview: item.overview || '',
             rating: item.rating || 0,
             season: item.season || 0,
@@ -92,23 +81,10 @@ const ContinueWatching = ({ maxItems = 20 }: ContinueWatchingProps) => {
       setContinuableItems(continuableItems);
 
     } catch (error) {
-      console.error('Error loading continue watching items:', error);
+      console.error('Error processing continue watching items:', error);
       setContinuableItems([]);
-    } finally {
-      setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    loadContinueWatchingItems();
-    
-    // Refresh every 30 seconds
-    const interval = setInterval(() => {
-      loadContinueWatchingItems();
-    }, 30000);
-    
-    return () => clearInterval(interval);
-  }, [user, maxItems]);
+  }, [user, watchHistory, maxItems]);
 
   // Handle scroll position to show/hide arrows
   const handleScroll = () => {

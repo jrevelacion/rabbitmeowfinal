@@ -248,8 +248,10 @@ const WatchHistory = () => {
 
   // Helper function to format season and episode
   const formatEpisodeInfo = (item: any): string | null => {
-    if (item?.media_type === 'tv' && item?.season_number && item?.episode_number) {
-      return `S${String(item.season_number).padStart(2, '0')} E${String(item.episode_number).padStart(2, '0')}`;
+    if (item?.media_type === 'tv' && (item?.season || item?.season_number) && (item?.episode || item?.episode_number)) {
+      const season = item?.season || item?.season_number;
+      const episode = item?.episode || item?.episode_number;
+      return `S${String(season).padStart(2, '0')} E${String(episode).padStart(2, '0')}`;
     }
     return null;
   };
@@ -264,17 +266,17 @@ const WatchHistory = () => {
     backdrop_path: item?.backdrop_path || '',
     media_type: (item?.media_type === 'tv' ? 'tv' : 'movie') as 'movie' | 'tv',
     overview: item?.overview || '',
-    vote_average: item?.vote_average || 0,
+    vote_average: item?.vote_average || item?.rating || 0,
     release_date: item?.release_date || '',
     first_air_date: item?.first_air_date || '',
     genre_ids: item?.genre_ids || [],
     docId: item?.id,
     watched_at: item?.watched_at || item?.created_at || item?.added_at,
-    season_number: item?.season_number,
-    episode_number: item?.episode_number,
+    season_number: item?.season || item?.season_number,
+    episode_number: item?.episode || item?.episode_number,
     episode_title: item?.episode_title || '',
     episode_info: formatEpisodeInfo(item),
-    progress: item?.progress || 0
+    progress: item?.progress || item?.watch_position || 0
   }));
 
   const favoritesMedia: ExtendedMedia[] = favorites.map((item: any) => ({
