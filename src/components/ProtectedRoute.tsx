@@ -15,10 +15,5 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       </div>
     );
   }
-/*
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-*/ //ALL IT WAS REQ TO COMMENT THIS PART 
   return <>{children}</>;
 }

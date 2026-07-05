@@ -18,6 +18,8 @@ import {
 } from './types/watch-history';
 
 const LOCAL_STORAGE_HISTORY_KEY = 'fdf_watch_history';
+const LOCAL_STORAGE_FAVORITES_KEY = 'fdf_favorites';
+const LOCAL_STORAGE_WATCHLIST_KEY = 'fdf_watchlist';
 const MAX_LOCAL_HISTORY = 10;
 
 export { WatchHistoryContext };
@@ -51,6 +53,42 @@ export function WatchHistoryProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(LOCAL_STORAGE_HISTORY_KEY, JSON.stringify(recentHistory));
     } catch (error) {
       console.error('Error saving local watch history:', error);
+    }
+  }, []);
+
+  const loadLocalFavorites = useCallback(() => {
+    try {
+      const stored = localStorage.getItem(LOCAL_STORAGE_FAVORITES_KEY);
+      return stored ? JSON.parse(stored) as FavoriteItem[] : [];
+    } catch (error) {
+      console.error('Error loading local favorites:', error);
+      return [];
+    }
+  }, []);
+
+  const saveLocalFavorites = useCallback((favs: FavoriteItem[]) => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_FAVORITES_KEY, JSON.stringify(favs));
+    } catch (error) {
+      console.error('Error saving local favorites:', error);
+    }
+  }, []);
+
+  const loadLocalWatchlist = useCallback(() => {
+    try {
+      const stored = localStorage.getItem(LOCAL_STORAGE_WATCHLIST_KEY);
+      return stored ? JSON.parse(stored) as WatchlistItem[] : [];
+    } catch (error) {
+      console.error('Error loading local watchlist:', error);
+      return [];
+    }
+  }, []);
+
+  const saveLocalWatchlist = useCallback((list: WatchlistItem[]) => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_WATCHLIST_KEY, JSON.stringify(list));
+    } catch (error) {
+      console.error('Error saving local watchlist:', error);
     }
   }, []);
 
@@ -92,7 +130,7 @@ export function WatchHistoryProvider({ children }: { children: ReactNode }) {
 
   const fetchFavorites = useCallback(async () => {
     if (!user) {
-      setFavorites([]);
+      setFavorites(loadLocalFavorites());
       return;
     }
 
@@ -118,7 +156,7 @@ export function WatchHistoryProvider({ children }: { children: ReactNode }) {
 
   const fetchWatchlist = useCallback(async () => {
     if (!user) {
-      setWatchlist([]);
+      setWatchlist(loadLocalWatchlist());
       return;
     }
 
@@ -153,8 +191,8 @@ export function WatchHistoryProvider({ children }: { children: ReactNode }) {
       });
     } else {
       setWatchHistory(loadLocalWatchHistory());
-      setFavorites([]);
-      setWatchlist([]);
+      setFavorites(loadLocalFavorites());
+      setWatchlist(loadLocalWatchlist());
       setHasMore(true);
       setOffset(0);
       setIsLoading(false);
@@ -296,8 +334,6 @@ const addToWatchHistory = useCallback(async (
   };
 
   const addToFavorites = async (item: MediaBaseItem) => {
-    if (!user) return;
-    
     try {
       const existingItem = favorites.find(fav => 
         fav.media_id === item.media_id && fav.media_type === item.media_type
@@ -305,6 +341,26 @@ const addToWatchHistory = useCallback(async (
       
       if (existingItem) return;
 
+      const newItem: FavoriteItem = {
+        id: `${item.media_id}`,
+        user_id: user?.uid || 'guest',
+        media_id: item.media_id,
+        media_type: item.media_type,
+        title: item.title,
+        poster_path: item.poster_path,
+        backdrop_path: item.backdrop_path,
+        overview: item.overview,
+        rating: item.rating,
+        added_at: new Date().toISOString()
+      };
+
+      if (!user) {
+        const updated = [newItem, ...favorites];
+        setFavorites(updated);
+        saveLocalFavorites(updated);
+        return;
+      }
+      
       const mockMedia = {
         id: item.media_id,
         media_id: item.media_id,
@@ -318,23 +374,11 @@ const addToWatchHistory = useCallback(async (
       };
 
       await favouritesService.addToFavourites(mockMedia);
-      
-      const newItem: FavoriteItem = {
-        id: `${item.media_id}`,
-        user_id: user.uid,
-        media_id: item.media_id,
-        media_type: item.media_type,
-        title: item.title,
-        poster_path: item.poster_path,
-        backdrop_path: item.backdrop_path,
-        overview: item.overview,
-        rating: item.rating,
-        added_at: new Date().toISOString()
-      };
-      
       setFavorites(prev => [newItem, ...prev]);
     } catch (error) {
       console.error('Error adding to favorites:', error);
+      // Fallback to local even if server fails but user is logged in? 
+      // Better to just show error if they are logged in.
       toast({
         title: "Error adding to favorites",
         description: "There was a problem adding to your favorites.",
@@ -344,14 +388,18 @@ const addToWatchHistory = useCallback(async (
   };
 
   const removeFromFavorites = async (mediaId: number, mediaType: 'movie' | 'tv') => {
-    if (!user) return;
+    const updatedFavorites = favorites.filter(
+      item => !(item.media_id === mediaId && item.media_type === mediaType)
+    );
+
+    if (!user) {
+      setFavorites(updatedFavorites);
+      saveLocalFavorites(updatedFavorites);
+      return;
+    }
     
     try {
       await favouritesService.removeFromFavourites(mediaId.toString());
-      
-      const updatedFavorites = favorites.filter(
-        item => !(item.media_id === mediaId && item.media_type === mediaType)
-      );
       setFavorites(updatedFavorites);
     } catch (error) {
       console.error('Error removing from favorites:', error);
@@ -381,14 +429,32 @@ const addToWatchHistory = useCallback(async (
   };
 
   const addToWatchlist = async (item: MediaBaseItem) => {
-    if (!user) return;
-    
     try {
       const existingItem = watchlist.find(watch => 
         watch.media_id === item.media_id && watch.media_type === item.media_type
       );
       
       if (existingItem) return;
+
+      const newItem: WatchlistItem = {
+        id: `${item.media_id}`,
+        user_id: user?.uid || 'guest',
+        media_id: item.media_id,
+        media_type: item.media_type,
+        title: item.title,
+        poster_path: item.poster_path,
+        backdrop_path: item.backdrop_path,
+        overview: item.overview,
+        rating: item.rating,
+        added_at: new Date().toISOString()
+      };
+
+      if (!user) {
+        const updated = [newItem, ...watchlist];
+        setWatchlist(updated);
+        saveLocalWatchlist(updated);
+        return;
+      }
 
       const mockMedia = {
         id: item.media_id,
@@ -403,20 +469,6 @@ const addToWatchHistory = useCallback(async (
       };
 
       await watchlistService.addToWatchlist(mockMedia);
-      
-      const newItem: WatchlistItem = {
-        id: `${item.media_id}`,
-        user_id: user.uid,
-        media_id: item.media_id,
-        media_type: item.media_type,
-        title: item.title,
-        poster_path: item.poster_path,
-        backdrop_path: item.backdrop_path,
-        overview: item.overview,
-        rating: item.rating,
-        added_at: new Date().toISOString()
-      };
-      
       setWatchlist(prev => [newItem, ...prev]);
     } catch (error) {
       console.error('Error adding to watchlist:', error);
@@ -429,14 +481,18 @@ const addToWatchHistory = useCallback(async (
   };
 
   const removeFromWatchlist = async (mediaId: number, mediaType: 'movie' | 'tv') => {
-    if (!user) return;
+    const updatedWatchlist = watchlist.filter(
+      item => !(item.media_id === mediaId && item.media_type === mediaType)
+    );
+
+    if (!user) {
+      setWatchlist(updatedWatchlist);
+      saveLocalWatchlist(updatedWatchlist);
+      return;
+    }
     
     try {
       await watchlistService.removeFromWatchlist(mediaId.toString());
-      
-      const updatedWatchlist = watchlist.filter(
-        item => !(item.media_id === mediaId && item.media_type === mediaType)
-      );
       setWatchlist(updatedWatchlist);
     } catch (error) {
       console.error('Error removing from watchlist:', error);

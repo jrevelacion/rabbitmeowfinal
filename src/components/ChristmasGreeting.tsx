@@ -160,7 +160,7 @@ const ChristmasGreeting = () => {
                     </div>
                     
                     <p className="text-sm text-gray-400 mb-6">
-                      FlickyStream Team
+                      RabbitMeow Team
                     </p>
 
                     <div className="relative mb-8">

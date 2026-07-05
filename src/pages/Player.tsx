@@ -721,14 +721,7 @@ const Player = () => {
   }, [mediaType, mediaDetails, memoizedNavigate, memoizedToast]);
 
   const toggleFavorite = useCallback(() => {
-    if (!user) {
-      memoizedToast({ 
-        title: "Login Required", 
-        description: "Please log in to add items to your favorites.",
-        variant: "destructive"
-      });
-      return;
-    }
+
     if (!mediaDetails || !id) return;
     const mediaId = parseInt(id, 10);
     if (isFavorite) {
@@ -751,14 +744,7 @@ const Player = () => {
   }, [user, mediaDetails, id, isFavorite, mediaType, removeFromFavorites, addToFavorites, title, memoizedToast]);
 
   const toggleWatchlist = useCallback(() => {
-    if (!user) {
-      memoizedToast({ 
-        title: "Login Required", 
-        description: "Please log in to add items to your watchlist.",
-        variant: "destructive"
-      });
-      return;
-    }
+
     if (!mediaDetails || !id) return;
     const mediaId = parseInt(id, 10);
     if (isInMyWatchlist) {
@@ -954,7 +940,12 @@ const Player = () => {
   }, [embedUrl, selectedSource, isLoading, memoizedToast]);
 
   const currentSource = videoSources.find(src => src.key === selectedSource);
-  const shouldSandbox = currentSource && !NO_SANDBOX_SOURCES.includes(currentSource.key);
+  const shouldSandbox = useMemo(() => {
+    if (!currentSource) return true;
+    if (NO_SANDBOX_SOURCES.includes(currentSource.key)) return false;
+    const needsFullPermissions = ['vidlink', 'vidfast', 'videasy', 'vidup', 'vidzee'].includes(currentSource.key);
+    return !needsFullPermissions;
+  }, [currentSource]);
 
   // Memoized episodes to render
   const episodesToRender = useMemo(() => {
@@ -1173,13 +1164,13 @@ const Player = () => {
                 <iframe
                   ref={iframeRef}
                   src={embedUrl}
-                     className="w-full h-full"
-                    title={title}
-                    sandbox="allow-scripts allow-same-origin allow-presentation"
-                    allowFullScreen
-                    referrerPolicy="no-referrer"
-                    allow="autoplay; encrypted-media"
-                    loading="lazy"
+                  className="w-full h-full"
+                  title={title}
+                  sandbox={shouldSandbox ? "allow-scripts allow-same-origin allow-presentation" : undefined}
+                  allowFullScreen
+                  referrerPolicy="no-referrer"
+                  allow="autoplay; encrypted-media"
+                  loading="lazy"
                 />
               ) : (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">

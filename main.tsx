@@ -11,9 +11,7 @@ try {
   const storedVersion = localStorage.getItem('appVersion');
   
   if (storedVersion !== APP_VERSION) {
-    console.log('App version changed, clearing storage...');
-    localStorage.clear();
-    sessionStorage.clear();
+    console.log('App version changed, updating version...');
     localStorage.setItem('appVersion', APP_VERSION);
   } else {
     console.log('App version unchanged, preserving storage');

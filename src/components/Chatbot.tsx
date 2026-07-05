@@ -102,7 +102,7 @@ export default function Chatbot() {
             {/* Chat Header */}
             <div className="flex items-center justify-between mb-4">
               <h2 id="chatbot-title" className="text-white text-lg sm:text-xl font-bold tracking-tight flex items-center gap-2">
-                <span className="text-blue-400">FlickyStream</span> Bot
+                <span className="text-blue-400">RabbitMeow</span> Bot
               </h2>
               <button
                 className="p-2 rounded-full hover:bg-gray-800/50 transition-colors duration-200"
