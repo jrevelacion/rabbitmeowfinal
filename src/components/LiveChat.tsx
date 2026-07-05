@@ -190,6 +190,14 @@ const LiveChat: React.FC<LiveChatProps> = ({ matchId }) => {
         </div>
       </div>
 
+      {/* Warning Message */}
+      <div className="px-4 py-2 bg-amber-500/10 border-b border-amber-500/20 flex items-center gap-2">
+        <ShieldAlert className="h-3 w-3 text-amber-500" />
+        <p className="text-[9px] text-amber-500/80 font-bold uppercase tracking-tight">
+          Warning: Be respectful. Inappropriate behavior will result in a permanent ban.
+        </p>
+      </div>
+
       {/* Messages Area */}
       <div 
         ref={scrollRef}

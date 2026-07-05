@@ -257,10 +257,28 @@ const Sports = () => {
                   sportsList.map((sport: Sport, index) => {
                     const sportColor = getColorForSport(sport.id);
                     const isSelected = selectedSport === sport.id;
-                    // Extract gradient colors from the sportColor.bg string
+                    
+                    // Map Tailwind classes to actual colors for the style object
+                    const colorMap: { [key: string]: string } = {
+                      'blue-600': 'rgb(37, 99, 235)',
+                      'cyan-500': 'rgb(6, 182, 212)',
+                      'green-600': 'rgb(22, 163, 74)',
+                      'emerald-500': 'rgb(16, 185, 129)',
+                      'orange-600': 'rgb(234, 88, 12)',
+                      'amber-500': 'rgb(245, 158, 11)',
+                      'yellow-500': 'rgb(234, 179, 8)',
+                      'lime-500': 'rgb(132, 204, 22)',
+                      'blue-500': 'rgb(59, 130, 246)',
+                      'indigo-600': 'rgb(79, 70, 229)',
+                      'red-600': 'rgb(220, 38, 38)',
+                      'pink-500': 'rgb(236, 72, 153)',
+                      'purple-600': 'rgb(147, 51, 234)',
+                      'red-500': 'rgb(239, 68, 68)',
+                    };
+
                     const gradientColors = sportColor.bg.split(' ');
-                    const color1 = gradientColors[1] || 'rgb(59, 130, 246)';
-                    const color2 = gradientColors[3] || 'rgb(34, 211, 238)';
+                    const color1 = colorMap[gradientColors[1]] || 'rgb(59, 130, 246)';
+                    const color2 = colorMap[gradientColors[3]] || 'rgb(34, 211, 238)';
                     
                     return (
                       <motion.button
@@ -268,8 +286,8 @@ const Sports = () => {
                         onClick={() => handleSportChange(sport.id)}
                         className={`px-6 py-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all duration-300 border-2 relative overflow-hidden group shadow-lg hover:shadow-2xl text-white`}
                         style={{
-                          background: isSelected ? `linear-gradient(135deg, ${color1}, ${color2})` : 'rgba(255,255,255,0.1)',
-                          borderColor: isSelected ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)',
+                          background: isSelected ? `linear-gradient(135deg, ${color1}, ${color2})` : 'rgba(255,255,255,0.05)',
+                          borderColor: isSelected ? color1 : 'rgba(255,255,255,0.1)',
                           boxShadow: isSelected ? `0 0 30px ${sportColor.glow}` : 'none'
                         }}
                         whileHover={{ scale: 1.05 }}

@@ -225,10 +225,10 @@ export const favouritesService = {
   }
 };
 
-// Watch history functions using Firebase Firestore
+  // Watch history functions using Firebase Firestore
 export const watchHistoryService = {
   async getWatchHistory(limit = 20, offset = 0): Promise<{ items: any[]; hasMore: boolean }> {
-    return await firebaseAuthService.getWatchHistory(limit);
+    return await firebaseAuthService.getWatchHistory(limit, offset);
   },
 
   async addToWatchHistory(media: any, watchPosition: number, duration: number, season?: number, episode?: number): Promise<void> {
@@ -239,15 +239,15 @@ export const watchHistoryService = {
   },
 
   async clearWatchHistory(): Promise<void> {
-    console.warn('clearWatchHistory not yet implemented for Firestore');
+    await firebaseAuthService.clearWatchHistory();
   },
 
   async cleanupWatchHistory(): Promise<{ removedDuplicates: number; remainingItems: number }> {
-    return { removedDuplicates: 0, remainingItems: 0 };
+    return await firebaseAuthService.cleanupWatchHistory();
   },
 
   async deleteWatchHistoryItem(id: string): Promise<void> {
-    console.warn('deleteWatchHistoryItem not yet implemented for Firestore');
+    await firebaseAuthService.deleteWatchHistoryItem(id);
   }
 };
 

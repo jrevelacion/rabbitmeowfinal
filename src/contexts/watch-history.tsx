@@ -107,15 +107,15 @@ export function WatchHistoryProvider({ children }: { children: ReactNode }) {
       
       const historyData = response.items.map(item => ({
         ...item,
-        id: item.media_id,
+        id: item.id, // Preserve Firestore document ID
         user_id: user.uid,
         media_id: parseInt(item.media_id),
-        created_at: item.created_at || new Date().toISOString()
+        created_at: item.updatedAt?.toDate?.()?.toISOString() || item.updatedAt || new Date().toISOString()
       }));
 
       setWatchHistory(prev => isInitial ? historyData : [...prev, ...historyData]);
       setHasMore(response.hasMore);
-      setOffset(currentOffset + historyData.length);
+      setOffset(currentOffset + response.items.length);
     } catch (error) {
       console.error('Error fetching watch history:', error);
       toast({
@@ -311,8 +311,8 @@ const addToWatchHistory = useCallback(async (
     if (!user) return;
     
     try {
-      await watchHistoryService.clearWatchHistory(); // API doesn't support single item deletion, so we refresh
-      await fetchWatchHistory(true);
+      await watchHistoryService.deleteWatchHistoryItem(id);
+      setWatchHistory(prev => prev.filter(item => item.id !== id));
       
       toast({
         title: "Item removed",
@@ -329,8 +329,22 @@ const addToWatchHistory = useCallback(async (
   };
 
   const deleteSelectedWatchHistory = async (ids: string[]) => {
-    // For simplicity, clear all history for now
-    await clearWatchHistory();
+    if (!user) return;
+    try {
+      await Promise.all(ids.map(id => watchHistoryService.deleteWatchHistoryItem(id)));
+      setWatchHistory(prev => prev.filter(item => !ids.includes(item.id)));
+      toast({
+        title: "Items removed",
+        description: "Selected items have been removed from your watch history."
+      });
+    } catch (error) {
+      console.error('Error deleting selected history:', error);
+      toast({
+        title: "Error removing items",
+        description: "There was a problem removing some items from your history.",
+        variant: "destructive"
+      });
+    }
   };
 
   const addToFavorites = async (item: MediaBaseItem) => {

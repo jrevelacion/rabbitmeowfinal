@@ -614,24 +614,6 @@ const Profile = () => {
 
                   <Separator />
 
-                  {/* Ads Toggle */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="space-y-0.5">
-                      <div className="font-medium">Advertisements</div>
-                      <div className="text-sm text-muted-foreground">
-                        {userPreferences?.adsEnabled ? 'Ads are enabled' : 'Ads are disabled'}
-                      </div>
-                    </div>
-                    <Switch
-                      checked={userPreferences?.adsEnabled}
-                      onCheckedChange={toggleAds}
-                      disabled={preferencesLoading}
-                      className="self-start sm:self-center"
-                    />
-                  </div>
-
-                  <Separator />
-
                   {/* Accent Color */}
                   <div className="space-y-3">
                     <div className="font-medium">Accent Color</div>

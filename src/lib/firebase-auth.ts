@@ -340,6 +340,67 @@ class FirebaseAuthService {
     }
   }
 
+  async clearWatchHistory(): Promise<void> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    try {
+      const historyRef = collection(db, 'users', currentUser.uid, 'watchHistory');
+      const snapshot = await getDocs(historyRef);
+      const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deletePromises);
+    } catch (error) {
+      console.error('Error clearing watch history:', error);
+      throw error;
+    }
+  }
+
+  async deleteWatchHistoryItem(id: string): Promise<void> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    try {
+      await deleteDoc(doc(db, 'users', currentUser.uid, 'watchHistory', id));
+    } catch (error) {
+      console.error('Error deleting watch history item:', error);
+      throw error;
+    }
+  }
+
+  async cleanupWatchHistory(): Promise<{ removedDuplicates: number; remainingItems: number }> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return { removedDuplicates: 0, remainingItems: 0 };
+
+    try {
+      const historyRef = collection(db, 'users', currentUser.uid, 'watchHistory');
+      const snapshot = await getDocs(historyRef);
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+      
+      const seen = new Set();
+      const duplicates: string[] = [];
+      
+      items.forEach(item => {
+        const key = `${item.media_id}_${item.media_type}_${item.season || 0}_${item.episode || 0}`;
+        if (seen.has(key)) {
+          duplicates.push(item.id);
+        } else {
+          seen.add(key);
+        }
+      });
+
+      const deletePromises = duplicates.map(id => deleteDoc(doc(db, 'users', currentUser.uid, 'watchHistory', id)));
+      await Promise.all(deletePromises);
+
+      return {
+        removedDuplicates: duplicates.length,
+        remainingItems: items.length - duplicates.length
+      };
+    } catch (error) {
+      console.error('Error cleaning up watch history:', error);
+      throw error;
+    }
+  }
+
   async changeEmail(newEmail: string): Promise<User> {
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -470,19 +531,24 @@ class FirebaseAuthService {
   }
 
   // Watch History Methods (Migration to Firestore)
-  async getWatchHistory(limitCount: number = 20): Promise<{ items: any[]; hasMore: boolean }> {
+  async getWatchHistory(limitCount: number = 20, offset: number = 0): Promise<{ items: any[]; hasMore: boolean }> {
     const currentUser = auth.currentUser;
     if (!currentUser) return { items: [], hasMore: false };
 
     try {
       const historyRef = collection(db, 'users', currentUser.uid, 'watchHistory');
-      const q = query(historyRef, orderBy('updatedAt', 'desc'), firestoreLimit(limitCount));
+      // For Firestore, offset is not efficient for large datasets, but for watch history it's usually fine.
+      // However, the current implementation doesn't easily support offset without startAfter.
+      // For now, we'll just fetch the first N items or use a simple approach.
+      const q = query(historyRef, orderBy('updatedAt', 'desc'), firestoreLimit(limitCount + offset));
       const querySnapshot = await getDocs(q);
-      const items = querySnapshot.docs.map(doc => ({
+      const allItems = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
-      return { items, hasMore: items.length === limitCount };
+      
+      const items = allItems.slice(offset);
+      return { items, hasMore: allItems.length === limitCount + offset };
     } catch (error) {
       console.error('Error getting watch history:', error);
       return { items: [], hasMore: false };
