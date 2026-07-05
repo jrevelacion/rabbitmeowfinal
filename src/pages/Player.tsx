@@ -49,7 +49,7 @@ const backdropSizes = {
 };
 
 // Video sources that should not be sandboxed
-const NO_SANDBOX_SOURCES = [];
+const NO_SANDBOX_SOURCES = ['riveembed', 'smashystream', '111movies', 'spanish', '2embed', 'moviesapi', 'autoembed', 'multiembed', 'vidsrc-me', 'primesrc', 'warezcdn', 'superflix'];
 
 // Define types for video source origins
 const SOURCE_ORIGINS: Record<string, string[]> = {
@@ -943,7 +943,7 @@ const Player = () => {
   const shouldSandbox = useMemo(() => {
     if (!currentSource) return true;
     if (NO_SANDBOX_SOURCES.includes(currentSource.key)) return false;
-    const needsFullPermissions = ['vidlink', 'vidfast', 'videasy', 'vidup', 'vidzee'].includes(currentSource.key);
+    const needsFullPermissions = ['vidlink', 'vidfast', 'videasy', 'vidup', 'vidzee', 'vidsrc-wtf-1', 'vidsrc-wtf-2', 'vidsrc-wtf-3', 'vidrock', 'vidnest'].includes(currentSource.key);
     return !needsFullPermissions;
   }, [currentSource]);
 

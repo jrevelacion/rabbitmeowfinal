@@ -27,7 +27,7 @@ interface TMDBVideoResponse {
 const tmdb = axios.create({
   baseURL: 'https://mid.vidzee.wtf/tmdb',
   params: {
-    api_key: '05902896074695709d7763505bb88b4d',
+    api_key: '297f1b91919bae59d50ed815f8d2e14c',
     language: 'en-US'
   }
 });
