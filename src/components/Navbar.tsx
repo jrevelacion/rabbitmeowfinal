@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks';
 import { searchMedia } from '@/utils/api';
 import { Media } from '@/utils/types';
 
-const Logo = '/rabbitmeowlive/logo.png';
+const Logo = '/logo.png';
 
 interface NavItem {
   title: string;

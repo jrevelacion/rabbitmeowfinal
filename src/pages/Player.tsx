@@ -880,7 +880,7 @@ const Player = () => {
     };
   }, [mediaType, episodes, id, season, episode, goToNextEpisode, selectedSource, autoNextEnabled]);
 
-  // Optimized video end detection using requestAnimationFrame
+    // Optimized video end detection using requestAnimationFrame
   useEffect(() => {
     if (!iframeRef.current || !embedUrl || isLoading || mediaType !== 'tv' || !autoNextEnabled) return;
 
@@ -909,43 +909,9 @@ const Player = () => {
   }, [embedUrl, isLoading, mediaType, episodes, goToNextEpisode, autoNextEnabled]);
 
   // Optimized sandbox error check with debounce
-  useEffect(() => {
-    if (!iframeRef.current || !embedUrl || isLoading) return;
+  // Sandbox error checking removed - no longer needed
 
-    const checkSandboxError = debounce(() => {
-      try {
-        const iframeDoc = iframeRef.current?.contentDocument;
-        if (iframeDoc && iframeDoc.body.innerText.includes('please disable sandbox')) {
-          const currentSource = videoSources.find(src => src.key === selectedSource);
-          const nextSource = videoSources.find(src => src.key !== selectedSource && (src as any).sandbox !== (currentSource as any)?.sandbox);
-          if (nextSource) {
-            setSelectedSource(nextSource.key);
-            localStorage.setItem('selectedVideoSource', nextSource.key);
-            memoizedToast({
-              title: "Source Issue",
-              description: `Switching from ${currentSource?.name} to ${nextSource.name} due to sandbox restrictions.`,
-              variant: "default"
-            });
-          }
-        }
-      } catch (error) {
-        // Silent fail
-      }
-    }, 500);
-
-    const timer = setInterval(checkSandboxError, 2000);
-    return () => {
-      clearInterval(timer);
-    };
-  }, [embedUrl, selectedSource, isLoading, memoizedToast]);
-
-  const currentSource = videoSources.find(src => src.key === selectedSource);
-  const shouldSandbox = useMemo(() => {
-    if (!currentSource) return true;
-    if (NO_SANDBOX_SOURCES.includes(currentSource.key)) return false;
-    const needsFullPermissions = ['vidlink', 'vidfast', 'videasy', 'vidup', 'vidzee', 'vidsrc-wtf-1', 'vidsrc-wtf-2', 'vidsrc-wtf-3', 'vidrock', 'vidnest'].includes(currentSource.key);
-    return !needsFullPermissions;
-  }, [currentSource]);
+  // Sandbox logic removed - all sources now have full permissions
 
   // Memoized episodes to render
   const episodesToRender = useMemo(() => {
@@ -1166,10 +1132,9 @@ const Player = () => {
                   src={embedUrl}
                   className="w-full h-full"
                   title={title}
-                  sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
                   allowFullScreen
                   referrerPolicy="no-referrer"
-                  allow="autoplay; encrypted-media"
+                  allow="autoplay; encrypted-media; fullscreen"
                   loading="lazy"
                 />
               ) : (
