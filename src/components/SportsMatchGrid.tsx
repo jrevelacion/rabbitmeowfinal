@@ -1,6 +1,6 @@
 import React from 'react';
 import { APIMatch } from '@/utils/sports-types';
-import SportMatchCard from './SportMatchCard';
+import SportsMatchCard from './SportsMatchCard';
 import { motion, Variants } from 'framer-motion';
 
 interface SportMatchGridProps {
@@ -57,7 +57,7 @@ const SportMatchGrid = ({ matches, title, emptyMessage = "No matches found." }: 
       >
         {matches.map((match) => (
           <motion.div key={match.id} variants={item} className="h-full">
-            <SportMatchCard match={match} />
+            <SportsMatchCard match={match} />
           </motion.div>
         ))}
       </motion.div>

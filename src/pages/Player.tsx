@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, Film, Tv, Check, SkipBack, SkipForward, Heart, Bookmark, Calendar, Star, Play, ExternalLink, Maximize2, Minimize2, ChevronRight, ChevronLeft, Shuffle } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useWatchHistory } from '@/hooks/watch-history';
 import { useAuth } from '@/hooks';

@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Home, Film, Tv, TrendingUp, Menu, X, Keyboard, ArrowRight, History, UserCircle, LogIn, UserPlus, Volleyball } from 'lucide-react';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks';
 import { searchMedia } from '@/utils/api';
 import { Media } from '@/utils/types';
@@ -259,67 +259,64 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           
           {/* Group container grouping Logo and Desktop menus together */}
-<div className="flex items-center">
+          <div className="flex items-center">
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-1">
+              {navItems.map((item) => (
+                item.external ? (
+                  <a
+                    key={item.path}
+                    href={item.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-2 rounded-md flex items-center text-sm font-medium transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10 hover:scale-105"
+                  >
+                    {item.icon}
+                    {item.title}
+                  </a>
+                ) : (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`px-3 py-2 rounded-md flex items-center text-sm font-medium transition-all duration-200 ${
+                      location.pathname === item.path
+                        ? 'text-accent bg-white/10'
+                        : 'text-white/80 hover:text-white hover:bg-white/10 hover:scale-105'
+                    }`}
+                  >
+                    {item.icon}
+                    {item.title}
+                  </Link>
+                )
+              ))}
 
-  {/* Desktop Navigation */}
-  <nav className="hidden md:flex items-center space-x-1">
-    {navItems.map((item) => (
-      item.external ? (
-        <a
-          key={item.path}
-          href={item.path}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-3 py-2 rounded-md flex items-center text-sm font-medium transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10 hover:scale-105"
-        >
-          {item.icon}
-          {item.title}
-        </a>
-      ) : (
-        <Link
-          key={item.path}
-          to={item.path}
-          className={`px-3 py-2 rounded-md flex items-center text-sm font-medium transition-all duration-200 ${
-            location.pathname === item.path
-              ? 'text-accent bg-white/10'
-              : 'text-white/80 hover:text-white hover:bg-white/10 hover:scale-105'
-          }`}
-        >
-          {item.icon}
-          {item.title}
-        </Link>
-      )
-    ))}
+              {authItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`px-3 py-2 rounded-md flex items-center text-sm font-medium transition-all duration-200 ${
+                    location.pathname === item.path
+                      ? 'text-accent bg-white/10'
+                      : 'text-white/80 hover:text-white hover:bg-white/10 hover:scale-105'
+                  }`}
+                >
+                  {item.icon}
+                  {item.title}
+                </Link>
+              ))}
+            </nav>
 
-    {authItems.map((item) => (
-      <Link
-        key={item.path}
-        to={item.path}
-        className={`px-3 py-2 rounded-md flex items-center text-sm font-medium transition-all duration-200 ${
-          location.pathname === item.path
-            ? 'text-accent bg-white/10'
-            : 'text-white/80 hover:text-white hover:bg-white/10 hover:scale-105'
-        }`}
-      >
-        {item.icon}
-        {item.title}
-      </Link>
-    ))}
-  </nav>
-
-  {/* Logo beside menu */}
-  <Link
-    to="/"
-    className="hidden md:flex items-center transition-transform hover:scale-110 ml-2"
-  >
-    <img
-      src={Logo}
-      alt="RabbitMeow Logo"
-      className="h-12 w-auto"
-    />
-  </Link>
-
-</div>
+            {/* Logo beside menu */}
+            <Link
+              to="/"
+              className="hidden md:flex items-center transition-transform hover:scale-110 ml-2"
+            >
+              <img
+                src={Logo}
+                alt="RabbitMeow Logo"
+                className="h-12 w-auto"
+              />
+            </Link>
           </div>
 
           {/* Mobile Search Bar */}

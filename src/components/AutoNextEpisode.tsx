@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { SkipForward, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface AutoNextEpisodeProps {
   isEnabled: boolean;
