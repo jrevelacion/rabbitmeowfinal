@@ -16,6 +16,8 @@ export interface User {
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
+  isAdmin?: boolean;
+  isBanned?: boolean;
 }
 
 class FirebaseAuthService {
@@ -31,12 +33,16 @@ class FirebaseAuthService {
         displayName: displayName,
       });
 
+      const isAdmin = email === 'surotember@gmail.com' || displayName === 'RabbitMeowAdmin';
+
       // Create user document in Firestore
       await setDoc(doc(db, 'users', firebaseUser.uid), {
         uid: firebaseUser.uid,
         email: firebaseUser.email,
         displayName: displayName,
         photoURL: firebaseUser.photoURL || null,
+        isAdmin: isAdmin,
+        isBanned: false,
         createdAt: new Date().toISOString(),
       });
 
@@ -46,6 +52,8 @@ class FirebaseAuthService {
           email: firebaseUser.email,
           displayName: displayName,
           photoURL: firebaseUser.photoURL,
+          isAdmin: isAdmin,
+          isBanned: false,
         },
       };
     } catch (error: any) {
@@ -60,12 +68,20 @@ class FirebaseAuthService {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
 
+      const isAdmin = firebaseUser.email === 'surotember@gmail.com' || firebaseUser.displayName === 'RabbitMeowAdmin';
+      
+      // Fetch additional user data from Firestore (like isBanned)
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      const userData = userDoc.exists() ? userDoc.data() : {};
+
       return {
         user: {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
           displayName: firebaseUser.displayName,
           photoURL: firebaseUser.photoURL,
+          isAdmin: isAdmin || userData.isAdmin || false,
+          isBanned: userData.isBanned || false,
         },
       };
     } catch (error: any) {
@@ -123,14 +139,33 @@ class FirebaseAuthService {
   }
 
   onAuthStateChanged(callback: (user: User | null) => void): () => void {
-    return onAuthStateChanged(auth, (firebaseUser) => {
+    return onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        callback({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL,
-        });
+        const isAdmin = firebaseUser.email === 'surotember@gmail.com' || firebaseUser.displayName === 'RabbitMeowAdmin';
+        
+        try {
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          const userData = userDoc.exists() ? userDoc.data() : {};
+          
+          callback({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName,
+            photoURL: firebaseUser.photoURL,
+            isAdmin: isAdmin || userData.isAdmin || false,
+            isBanned: userData.isBanned || false,
+          });
+        } catch (error) {
+          console.error('Error fetching user data in onAuthStateChanged:', error);
+          callback({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName,
+            photoURL: firebaseUser.photoURL,
+            isAdmin: isAdmin,
+            isBanned: false,
+          });
+        }
       } else {
         callback(null);
       }
