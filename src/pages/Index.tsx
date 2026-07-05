@@ -119,65 +119,12 @@ const Index = () => {
         ) : (
           <>
              <div className="pt-16">
-
-              {true && (
-                <div className="mx-4 md:mx-8 mt-6">
-                  <div className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-gradient-to-r from-zinc-900 to-zinc-950 shadow-xl">
-
-                    <button
-                      onClick={closeWelcomeCard}
-                      className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-zinc-400 transition hover:bg-zinc-700 hover:text-white"
-                    >
-                      ✕
-                    </button>
-
-                    <div className="flex flex-col md:flex-row items-center gap-6 p-6 md:p-8">
-
-                      <img
-                        src="/rabbitmeowlive/logo.png"
-                        alt="RabbitMeow"
-                        className="w-24 h-24 md:w-32 md:h-32 object-contain"
-                      />
-
-                      <div className="flex-1 text-center md:text-left">
-                        <h2 className="text-2xl md:text-3xl font-bold text-white">
-                          🐰🐱 Welcome to RabbitMeow
-                        </h2>
-
-                        <p className="mt-3 text-zinc-300">
-                          Your cozy home for movies, TV shows, and sports.
-                          Multiple streaming servers are available to help
-                          you find the best viewing experience.
-                        </p>
-
-                        <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
-                          <span className="rounded-full bg-blue-500/20 px-3 py-1 text-sm text-blue-400">
-                            Movies
-                          </span>
-
-                          <span className="rounded-full bg-purple-500/20 px-3 py-1 text-sm text-purple-400">
-                            TV Shows
-                          </span>
-
-                          <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm text-green-400">
-                            Sports
-                          </span>
-
-                          <span className="rounded-full bg-pink-500/20 px-3 py-1 text-sm text-pink-400">
-                            Rabbit & Cat Approved
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )} 
                  {trendingMedia.length > 0 && (
-  <Hero
-    media={trendingMedia.slice(0, 5)}
-    className="hero"
-  />
-)}
+                   <Hero
+                     media={trendingMedia.slice(0, 5)}
+                     className="hero"
+                   />
+                 )}
             </div>
 
             <div
