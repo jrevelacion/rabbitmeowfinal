@@ -26,6 +26,7 @@
     "class-variance-authority": "latest",
     "clsx": "latest",
     "date-fns": "latest",
+    "firebase": "^12.15.0",
     "framer-motion": "latest",
     "lucide-react": "latest",
     "next-themes": "latest",

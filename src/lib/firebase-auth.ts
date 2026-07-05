@@ -1,0 +1,174 @@
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  updateProfile,
+  User as FirebaseUser,
+  setPersistence,
+  browserLocalPersistence,
+} from 'firebase/auth';
+import { auth, db } from './firebase';
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+
+export interface User {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+}
+
+class FirebaseAuthService {
+  async signUp(email: string, password: string, displayName: string): Promise<{ user: User }> {
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+      
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+
+      // Update profile with display name
+      await updateProfile(firebaseUser, {
+        displayName: displayName,
+      });
+
+      // Create user document in Firestore
+      await setDoc(doc(db, 'users', firebaseUser.uid), {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: displayName,
+        photoURL: firebaseUser.photoURL || null,
+        createdAt: new Date().toISOString(),
+      });
+
+      return {
+        user: {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: displayName,
+          photoURL: firebaseUser.photoURL,
+        },
+      };
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to sign up');
+    }
+  }
+
+  async signIn(email: string, password: string): Promise<{ user: User }> {
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+      
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+
+      return {
+        user: {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+        },
+      };
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to sign in');
+    }
+  }
+
+  async signOut(): Promise<void> {
+    try {
+      await signOut(auth);
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to sign out');
+    }
+  }
+
+  getCurrentUser(): FirebaseUser | null {
+    return auth.currentUser;
+  }
+
+  onAuthStateChanged(callback: (user: User | null) => void): () => void {
+    return onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        callback({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+        });
+      } else {
+        callback(null);
+      }
+    });
+  }
+
+  async updateProfile(updates: { displayName?: string; photoURL?: string }): Promise<User> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('No user is currently signed in');
+    }
+
+    try {
+      await updateProfile(currentUser, updates);
+
+      // Update Firestore document
+      await updateDoc(doc(db, 'users', currentUser.uid), {
+        ...updates,
+        updatedAt: new Date().toISOString(),
+      });
+
+      return {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        displayName: currentUser.displayName,
+        photoURL: currentUser.photoURL,
+      };
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to update profile');
+    }
+  }
+
+  async updateDisplayName(displayName: string): Promise<User> {
+    return this.updateProfile({ displayName });
+  }
+
+  isAuthenticated(): boolean {
+    return !!auth.currentUser;
+  }
+
+  getStoredUser(): User | null {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      return {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        displayName: currentUser.displayName,
+        photoURL: currentUser.photoURL,
+      };
+    }
+    return null;
+  }
+
+  async getCurrentUserData(): Promise<User | null> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      return null;
+    }
+
+    try {
+      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+      if (userDoc.exists()) {
+        return userDoc.data() as User;
+      }
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+    }
+
+    return {
+      uid: currentUser.uid,
+      email: currentUser.email,
+      displayName: currentUser.displayName,
+      photoURL: currentUser.photoURL,
+    };
+  }
+}
+
+export const firebaseAuthService = new FirebaseAuthService();
