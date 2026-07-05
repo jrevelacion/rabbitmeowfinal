@@ -73,6 +73,43 @@ class FirebaseAuthService {
     }
   }
 
+  async signInByUsername(username: string, password: string): Promise<{ user: User }> {
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+      
+      // Query Firestore to find user by displayName (username)
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('displayName', '==', username));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        throw new Error('User not found');
+      }
+
+      const userDoc = querySnapshot.docs[0];
+      const userData = userDoc.data() as User;
+      
+      // Now sign in with the email
+      if (!userData.email) {
+        throw new Error('User email not found');
+      }
+
+      const userCredential = await signInWithEmailAndPassword(auth, userData.email, password);
+      const firebaseUser = userCredential.user;
+
+      return {
+        user: {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+        },
+      };
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to sign in with username');
+    }
+  }
+
   async signOut(): Promise<void> {
     try {
       await signOut(auth);
@@ -194,6 +231,49 @@ class FirebaseAuthService {
       displayName: currentUser.displayName,
       photoURL: currentUser.photoURL,
     };
+  }
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    throw new Error('Password change not yet implemented');
+  }
+
+  async deleteAccount(password: string): Promise<void> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('No user is currently signed in');
+    }
+
+    try {
+      await updateDoc(doc(db, 'users', currentUser.uid), {
+        deletedAt: new Date().toISOString(),
+        deleted: true,
+      });
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to delete account');
+    }
+  }
+
+  async changeEmail(newEmail: string): Promise<User> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('No user is currently signed in');
+    }
+
+    try {
+      await updateDoc(doc(db, 'users', currentUser.uid), {
+        email: newEmail,
+        updatedAt: new Date().toISOString(),
+      });
+
+      return {
+        uid: currentUser.uid,
+        email: newEmail,
+        displayName: currentUser.displayName,
+        photoURL: currentUser.photoURL,
+      };
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to change email');
+    }
   }
 }
 

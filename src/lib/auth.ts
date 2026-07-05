@@ -1,36 +1,4 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'https://api.flickystream.ru/api';
-
-// Create axios instance with default config
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add token to requests if available
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Handle token expiration
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
+import { firebaseAuthService } from './firebase-auth';
 
 // User interface - displayName is the username
 export interface User {
@@ -66,18 +34,15 @@ const cachedRequest = async (key: string, requestFn: () => Promise<any>) => {
   return promise;
 };
 
-// Auth functions
+// Auth functions - Using Firebase exclusively
 export const authService = {
   // Sign up with email, password, and username (displayName)
   async signUp(email: string, password: string, displayName: string): Promise<{ user: User; token: string }> {
     try {
-      const response = await api.post('/auth/register', {
-        email,
-        password,
-        displayName // This is the username
-      });
+      const { user } = await firebaseAuthService.signUp(email, password, displayName);
       
-      const { token, user } = response.data;
+      // Generate a simple token for localStorage (Firebase handles actual auth)
+      const token = 'firebase_' + Date.now();
       
       // Store token and user in localStorage
       localStorage.setItem('authToken', token);
@@ -85,10 +50,9 @@ export const authService = {
       
       return { user, token };
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Registration failed');
+      throw new Error(error.message || 'Registration failed');
     }
   },
-  
 
   // Sign in with email OR username
   async signIn(identifier: string, password: string): Promise<{ user: User; token: string }> {
@@ -96,29 +60,29 @@ export const authService = {
       // Check if identifier is email (contains @) or username
       const isEmail = identifier.includes('@');
       
-      const payload = isEmail 
-        ? { email: identifier, password }
-        : { displayName: identifier, password };
-      
-      const response = await api.post('/auth/login', payload);
-      
-      const { token, user } = response.data;
-      
-      // Store token and user in localStorage
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      return { user, token };
+      if (isEmail) {
+        // Email login
+        const { user } = await firebaseAuthService.signIn(identifier, password);
+        const token = 'firebase_' + Date.now();
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        return { user, token };
+      } else {
+        // Username login - need to find user by displayName first
+        const { user } = await firebaseAuthService.signInByUsername(identifier, password);
+        const token = 'firebase_' + Date.now();
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        return { user, token };
+      }
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Login failed');
+      throw new Error(error.message || 'Login failed');
     }
   },
 
   // Check username availability using Firebase
   async checkUsername(username: string): Promise<{ available: boolean; message: string }> {
     try {
-      // Import Firebase auth service dynamically to avoid circular dependencies
-      const { firebaseAuthService } = await import('./firebase-auth');
       return await firebaseAuthService.checkUsername(username);
     } catch (error: any) {
       console.error('Error checking username:', error);
@@ -129,48 +93,34 @@ export const authService = {
   // Update user profile (username or photo)
   async updateProfile(updates: { displayName?: string; photoURL?: string }): Promise<User> {
     try {
-      const response = await api.patch('/auth/update-profile', updates);
-      const user = response.data.user;
-      
-      // Update stored user data
+      const user = await firebaseAuthService.updateProfile(updates);
       localStorage.setItem('user', JSON.stringify(user));
-      
       return user;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Failed to update profile');
+      throw new Error(error.message || 'Failed to update profile');
     }
   },
 
   // Update only display name (username)
   async updateDisplayName(displayName: string): Promise<User> {
     try {
-      const response = await api.patch('/auth/display-name', { displayName });
-      const user = response.data.user;
-      
-      // Update stored user data
+      const user = await firebaseAuthService.updateDisplayName(displayName);
       localStorage.setItem('user', JSON.stringify(user));
-      
       return user;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Failed to update username');
+      throw new Error(error.message || 'Failed to update username');
     }
   },
 
   // Get current user
   async getCurrentUser(): Promise<User | null> {
     try {
-      const token = localStorage.getItem('authToken');
-      if (!token) return null;
-
-      const response = await api.get('/auth/me');
-      const user = response.data;
-      
-      // Update stored user data
-      localStorage.setItem('user', JSON.stringify(user));
-      
+      const user = await firebaseAuthService.getCurrentUserData();
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      }
       return user;
     } catch (error) {
-      // If token is invalid, clear storage
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
       return null;
@@ -179,6 +129,11 @@ export const authService = {
 
   // Sign out
   async signOut(): Promise<void> {
+    try {
+      await firebaseAuthService.signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
   },
@@ -192,53 +147,38 @@ export const authService = {
       return null;
     }
   },
-  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-  try {
-    const response = await api.post('/auth/change-password', {
-      currentPassword,
-      newPassword
-    });
-    return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to change password');
-  }
-},
 
-// Delete account
-async deleteAccount(password: string): Promise<void> {
-  try {
-    const response = await api.delete('/auth/account', {
-      data: { password }
-    });
-    
-    // Clear local storage on successful deletion
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    
-    return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to delete account');
-  }
-},
-// Change email
-async changeEmail(currentPassword: string, newEmail: string): Promise<{ user: User; token: string }> {
-  try {
-    const response = await api.post('/auth/change-email', {
-      currentPassword,
-      newEmail
-    });
-    
-    const { token, user } = response.data;
-    
-    // Update stored user data
-    localStorage.setItem('authToken', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    
-    return { user, token };
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || 'Failed to change email');
-  }
-},
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    try {
+      await firebaseAuthService.changePassword(currentPassword, newPassword);
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to change password');
+    }
+  },
+
+  // Delete account
+  async deleteAccount(password: string): Promise<void> {
+    try {
+      await firebaseAuthService.deleteAccount(password);
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to delete account');
+    }
+  },
+
+  // Change email
+  async changeEmail(currentPassword: string, newEmail: string): Promise<{ user: User; token: string }> {
+    try {
+      const user = await firebaseAuthService.changeEmail(newEmail);
+      const token = 'firebase_' + Date.now();
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      return { user, token };
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to change email');
+    }
+  },
 
   // Check if user is authenticated
   isAuthenticated(): boolean {
@@ -248,7 +188,7 @@ async changeEmail(currentPassword: string, newEmail: string): Promise<{ user: Us
 
 
 
-// Watchlist functions
+// Watchlist functions (these can use API or Firebase as needed)
 export const watchlistService = {
   async getWatchlist(): Promise<any[]> {
     try {
