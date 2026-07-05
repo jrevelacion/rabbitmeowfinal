@@ -424,9 +424,26 @@ class FirebaseAuthService {
     }
   }
 
+  // Helper to get user, waiting for auth to initialize if it's currently null
+  private async getActiveUser(): Promise<FirebaseUser | null> {
+    if (auth.currentUser) return auth.currentUser;
+    
+    return new Promise((resolve) => {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        unsubscribe();
+        resolve(user);
+      });
+      // Timeout after 2 seconds to avoid hanging
+      setTimeout(() => {
+        unsubscribe();
+        resolve(auth.currentUser);
+      }, 2000);
+    });
+  }
+
   // Watchlist Methods
   async getWatchlist(): Promise<any[]> {
-    const currentUser = auth.currentUser;
+    const currentUser = await this.getActiveUser();
     if (!currentUser) return [];
 
     try {
@@ -479,7 +496,7 @@ class FirebaseAuthService {
 
   // Favorites Methods
   async getFavorites(): Promise<any[]> {
-    const currentUser = auth.currentUser;
+    const currentUser = await this.getActiveUser();
     if (!currentUser) return [];
 
     try {
@@ -532,7 +549,7 @@ class FirebaseAuthService {
 
   // Watch History Methods (Migration to Firestore)
   async getWatchHistory(limitCount: number = 20, offset: number = 0): Promise<{ items: any[]; hasMore: boolean }> {
-    const currentUser = auth.currentUser;
+    const currentUser = await this.getActiveUser();
     if (!currentUser) return { items: [], hasMore: false };
 
     try {

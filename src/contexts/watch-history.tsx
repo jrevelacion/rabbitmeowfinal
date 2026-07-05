@@ -25,7 +25,7 @@ const MAX_LOCAL_HISTORY = 10;
 export { WatchHistoryContext };
 
 export function WatchHistoryProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { userPreferences } = useUserPreferences();
   const [watchHistory, setWatchHistory] = useState<WatchHistoryItem[]>([]);
   const [hasMore, setHasMore] = useState(true);
@@ -181,6 +181,8 @@ export function WatchHistoryProvider({ children }: { children: ReactNode }) {
   }, [user?.uid, toast]);
 
   useEffect(() => {
+    if (authLoading) return;
+
     if (user) {
       Promise.all([
         fetchWatchHistory(true),
@@ -197,7 +199,7 @@ export function WatchHistoryProvider({ children }: { children: ReactNode }) {
       setOffset(0);
       setIsLoading(false);
     }
-  }, [user?.uid, fetchWatchHistory, fetchFavorites, fetchWatchlist, loadLocalWatchHistory]);
+  }, [user?.uid, authLoading, fetchWatchHistory, fetchFavorites, fetchWatchlist, loadLocalWatchHistory]);
 
 const addToWatchHistory = useCallback(async (
   media: Media,

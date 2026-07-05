@@ -9,20 +9,19 @@ export function AuthProvider({ children }: { children: React.Node }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check for stored user on mount
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('authToken');
-    
-    if (storedUser && token) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error('Failed to parse stored user', e);
+    const unsubscribe = authService.onAuthStateChanged((user) => {
+      setUser(user);
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('authToken', 'firebase_' + Date.now());
+      } else {
         localStorage.removeItem('user');
         localStorage.removeItem('authToken');
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleAuthError = (error: Error) => {

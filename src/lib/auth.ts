@@ -184,6 +184,10 @@ export const authService = {
   // Check if user is authenticated
   isAuthenticated(): boolean {
     return !!localStorage.getItem('authToken');
+  },
+
+  onAuthStateChanged(callback: (user: User | null) => void): () => void {
+    return firebaseAuthService.onAuthStateChanged(callback);
   }
 };
 
