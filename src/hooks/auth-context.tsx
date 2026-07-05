@@ -1,21 +1,28 @@
 import { useEffect, useState } from 'react';
-import { firebaseAuthService, User } from '@/lib/firebase-auth';
+import { authService, User } from '@/lib/auth';
 import { useToast } from '@/components/ui/use-toast';
 import { AuthContext, AuthContextType } from '@/contexts/auth';
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: React.Node }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Listen to auth state changes
-    const unsubscribe = firebaseAuthService.onAuthStateChanged((authUser) => {
-      setUser(authUser);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    // Check for stored user on mount
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('authToken');
+    
+    if (storedUser && token) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error('Failed to parse stored user', e);
+        localStorage.removeItem('user');
+        localStorage.removeItem('authToken');
+      }
+    }
+    setLoading(false);
   }, []);
 
   const handleAuthError = (error: Error) => {
@@ -26,9 +33,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (identifier: string, password: string) => {
     try {
-      const { user } = await firebaseAuthService.signIn(email, password);
+      const { user } = await authService.signIn(identifier, password);
       setUser(user);
       toast({
         title: "Welcome back!",
@@ -44,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, displayName: string) => {
     try {
-      const { user } = await firebaseAuthService.signUp(email, password, displayName);
+      const { user } = await authService.signUp(email, password, displayName);
       setUser(user);
       toast({
         title: "Account created",
@@ -59,13 +66,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const checkUsername = async (username: string): Promise<{ available: boolean; message: string }> => {
-    // For now, always return available as Firebase doesn't have a built-in username check
-    return { available: true, message: "Username is available" };
+    try {
+      return await authService.checkUsername(username);
+    } catch (error) {
+      return { available: false, message: "Error checking username" };
+    }
   };
 
   const updateUsername = async (displayName: string) => {
     try {
-      const updatedUser = await firebaseAuthService.updateDisplayName(displayName);
+      const updatedUser = await authService.updateDisplayName(displayName);
       setUser(updatedUser);
       toast({
         title: "Username updated",
@@ -82,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = async (updates: { displayName?: string; photoURL?: string }) => {
     try {
-      const updatedUser = await firebaseAuthService.updateProfile(updates);
+      const updatedUser = await authService.updateProfile(updates);
       setUser(updatedUser);
       toast({
         title: "Profile updated",
@@ -98,36 +108,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    try {
-      // For now, we'll disable Google sign-in as it requires additional setup
-      toast({
-        title: "Coming Soon",
-        description: "Google sign-in is not available yet.",
-        variant: "destructive",
-      });
-      throw new Error("Google sign-in not implemented");
-    } catch (error) {
-      if (error instanceof Error) {
-        handleAuthError(error);
-      }
-      throw error;
-    }
+    toast({
+      title: "Coming Soon",
+      description: "Google sign-in is not available yet.",
+      variant: "destructive",
+    });
+    throw new Error("Google sign-in not implemented");
   };
 
   const logout = async () => {
-    try {
-      await firebaseAuthService.signOut();
-      setUser(null);
-      toast({
-        title: "Signed out",
-        description: "You have been signed out successfully.",
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        handleAuthError(error);
-      }
-      throw error;
-    }
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    setUser(null);
+    toast({
+      title: "Signed out",
+      description: "You have been signed out successfully.",
+    });
   };
 
   const value: AuthContextType = {

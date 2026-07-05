@@ -26,6 +26,7 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
+import LiveChat from '@/components/LiveChat';
 
 const SportMatchPlayer = () => {
   const { userPreferences } = useUserPreferences();
@@ -394,8 +395,12 @@ const SportMatchPlayer = () => {
                   </Button>
                 </div>
               </div>
+
+              {/* Live Chat Sidebar */}
+              <div className="lg:h-[calc(100vh-200px)] min-h-[500px]">
+                {matchId && <LiveChat matchId={matchId} />}
+              </div>
             </div>
-            
           </div>
         </div>
         
