@@ -1166,7 +1166,7 @@ const Player = () => {
                   src={embedUrl}
                   className="w-full h-full"
                   title={title}
-                  sandbox="allow-scripts allow-same-origin allow-presentation"
+                  sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
                   allowFullScreen
                   referrerPolicy="no-referrer"
                   allow="autoplay; encrypted-media"
