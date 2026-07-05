@@ -70,17 +70,36 @@ class FirebaseAuthService {
 
       const isAdmin = firebaseUser.email === 'surotember@gmail.com' || firebaseUser.displayName === 'RabbitMeowAdmin';
       
-      // Fetch additional user data from Firestore (like isBanned)
-      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-      const userData = userDoc.exists() ? userDoc.data() : {};
+      // Ensure user document exists in Firestore
+      const userRef = doc(db, 'users', firebaseUser.uid);
+      const userDoc = await getDoc(userRef);
+      let userData = userDoc.exists() ? userDoc.data() : null;
+
+      if (!userData) {
+        // Create the missing document
+        userData = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Anonymous',
+          photoURL: firebaseUser.photoURL || null,
+          isAdmin: isAdmin,
+          isBanned: false,
+          createdAt: new Date().toISOString(),
+        };
+        await setDoc(userRef, userData);
+      } else if (isAdmin && !userData.isAdmin) {
+        // Update admin status if it's missing in Firestore
+        await updateDoc(userRef, { isAdmin: true });
+        userData.isAdmin = true;
+      }
 
       return {
         user: {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
+          displayName: userData.displayName || firebaseUser.displayName,
           photoURL: firebaseUser.photoURL,
-          isAdmin: isAdmin || userData.isAdmin || false,
+          isAdmin: userData.isAdmin || false,
           isBanned: userData.isBanned || false,
         },
       };
@@ -113,12 +132,22 @@ class FirebaseAuthService {
       const userCredential = await signInWithEmailAndPassword(auth, userData.email, password);
       const firebaseUser = userCredential.user;
 
+      const isAdmin = firebaseUser.email === 'surotember@gmail.com' || firebaseUser.displayName === 'RabbitMeowAdmin';
+      
+      // We already have userData from the initial query, but let's ensure it's up to date
+      if (isAdmin && !userData.isAdmin) {
+        await updateDoc(doc(db, 'users', firebaseUser.uid), { isAdmin: true });
+        userData.isAdmin = true;
+      }
+
       return {
         user: {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
           displayName: firebaseUser.displayName,
           photoURL: firebaseUser.photoURL,
+          isAdmin: userData.isAdmin || false,
+          isBanned: userData.isBanned || false,
         },
       };
     } catch (error: any) {
@@ -264,10 +293,18 @@ class FirebaseAuthService {
       return null;
     }
 
+    const isAdmin = currentUser.email === 'surotember@gmail.com' || currentUser.displayName === 'RabbitMeowAdmin';
+
     try {
-      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+      const userRef = doc(db, 'users', currentUser.uid);
+      const userDoc = await getDoc(userRef);
       if (userDoc.exists()) {
-        return userDoc.data() as User;
+        const userData = userDoc.data() as User;
+        if (isAdmin && !userData.isAdmin) {
+          await updateDoc(userRef, { isAdmin: true });
+          userData.isAdmin = true;
+        }
+        return userData;
       }
     } catch (error) {
       console.error('Failed to fetch user data:', error);
@@ -278,6 +315,8 @@ class FirebaseAuthService {
       email: currentUser.email,
       displayName: currentUser.displayName,
       photoURL: currentUser.photoURL,
+      isAdmin: isAdmin,
+      isBanned: false,
     };
   }
 
