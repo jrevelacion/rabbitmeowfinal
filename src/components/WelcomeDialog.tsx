@@ -120,7 +120,7 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, isOpen }) => {
                     className="relative"
                   >
                     <img
-                      src="/logo.png"
+                      src="/rabbitmeowlive/logo.png"
                       alt="RabbitMeow"
                       className="h-32 w-32 object-contain drop-shadow-lg"
                     />

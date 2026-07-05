@@ -134,7 +134,7 @@ const Index = () => {
                     <div className="flex flex-col md:flex-row items-center gap-6 p-6 md:p-8">
 
                       <img
-                        src="/logo2.png"
+                        src="/rabbitmeowlive/logo.png"
                         alt="RabbitMeow"
                         className="w-24 h-24 md:w-32 md:h-32 object-contain"
                       />
