@@ -13,7 +13,7 @@ import Movies from "./pages/Movies";
 import TVShows from "./pages/TVShows";
 import Trending from "./pages/Trending";
 import MovieDetails from "./pages/MovieDetails";
-import TVDetails from "./pages/TVDetailsPage";
+import TVDetails from "./pages/TVDetails";
 import Player from "./pages/Player";
 import Search from "./pages/Search";
 import Profile from "./pages/Profile";
@@ -26,7 +26,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DMCANotice from "./pages/DMCANotice";
 import ContentRemoval from "./pages/ContentRemoval";
 import Sports from "./pages/Sports";
-import SportMatchPlayer from "./pages/SportsMatchPlayer";
+import SportMatchPlayer from "./pages/SportMatchPlayer";
 import { useEffect } from "react";
 import ChristmasGreeting from "./components/ChristmasGreeting";
 
