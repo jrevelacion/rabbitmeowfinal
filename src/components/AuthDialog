@@ -45,6 +45,7 @@ const AuthDialog = () => {
     if (value.length < 3) { setUsernameError('Must be at least 3 characters'); setUsernameAvailable(null); return; }
     if (value.length > 20) { setUsernameError('Cannot exceed 20 characters'); setUsernameAvailable(null); return; }
     if (!/^[a-zA-Z0-9_]+$/.test(value)) { setUsernameError('Letters, numbers and _ only'); setUsernameAvailable(null); return; }
+    if (!/[a-zA-Z]/.test(value)) { setUsernameError('Must contain at least one letter'); setUsernameAvailable(null); return; }
     setIsCheckingUsername(true);
     try {
       const r = await authService.checkUsername(value);

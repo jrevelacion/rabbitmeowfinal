@@ -50,6 +50,18 @@ export default function Signup() {
       return;
     }
     
+    if (!/[a-zA-Z]/.test(value)) {
+      setUsernameError('Username must contain at least one letter');
+      setUsernameAvailable(null);
+      return;
+    }
+    
+    if (!/[a-zA-Z0-9]/.test(value)) {
+      setUsernameError('Username must contain at least one alphanumeric character');
+      setUsernameAvailable(null);
+      return;
+    }
+    
     setIsCheckingUsername(true);
     try {
       const result = await authService.checkUsername(value);
