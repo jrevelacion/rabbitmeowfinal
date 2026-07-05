@@ -36,7 +36,7 @@ const Hero = ({ media, className }: HeroProps) => {
         ? `movie/${mediaItem.id}/images`
         : `tv/${mediaItem.id}/images`;
       const response = await fetch(
-        `https://mid.vidzee.wtf/tmdb/${endpoint}?api_key=${apiKey}`
+        `https://api.themoviedb.org/3/${endpoint}?api_key=${apiKey}`
       );
       const data = await response.json();
       const logos = data.logos || [];

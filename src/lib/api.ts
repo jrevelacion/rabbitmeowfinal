@@ -25,7 +25,7 @@ interface TMDBVideoResponse {
 
 // Create axios instance for TMDB
 const API_KEY = '297f1b91919bae59d50ed815f8d2e14c';
-const BASE_URL = 'https://mid.vidzee.wtf/tmdb';
+const BASE_URL = 'https://api.themoviedb.org/3';
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
 
 const tmdb = axios.create({
