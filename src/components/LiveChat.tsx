@@ -139,17 +139,23 @@ const LiveChat: React.FC<LiveChatProps> = ({ matchId }) => {
 
     try {
       const chatRef = collection(db, 'chats', matchId, 'messages');
-      await addDoc(chatRef, {
+      const messageData = {
         text: newMessage.trim(),
         userId: user.uid,
         userName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
-        userPhoto: user.photoURL,
+        userPhoto: user.photoURL || null,
         createdAt: serverTimestamp(),
-      });
+      };
+      
+      await addDoc(chatRef, messageData);
       setNewMessage('');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
-      toast.error('Failed to send message.');
+      let errorMessage = 'Failed to send message.';
+      if (error.code === 'permission-denied') {
+        errorMessage = 'Permission denied. Please check your Firestore rules.';
+      }
+      toast.error(errorMessage);
     }
   };
 
