@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { APIMatch } from '@/utils/sports-types';
 import { getMatchPosterUrl, getTeamBadgeUrl } from '@/utils/sports-api';
@@ -34,6 +34,11 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
   const { userPreferences } = useUserPreferences();
   const accentColor = userPreferences?.accentColor || 'hsl(var(--accent))';
   const [isHovered, setIsHovered] = useState(false);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  
+  const handleImageError = useCallback((badgeUrl: string) => {
+    setFailedImages(prev => new Set(prev).add(badgeUrl));
+  }, []);
   
   const now = new Date().getTime();
   const matchTime = new Date(match.date);
@@ -96,13 +101,19 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
                   animate={isHovered ? { y: -6, boxShadow: `0 12px 30px rgba(255,255,255,0.3)` } : { y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <img
-                    src={getTeamBadgeUrl(match.teams.home.badge)}
-                    alt=""
-                    className="w-full h-full object-contain drop-shadow-lg"
-                    loading="lazy"
-                    onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
-                  />
+                  {!failedImages.has(match.teams.home.badge) ? (
+                    <img
+                      src={getTeamBadgeUrl(match.teams.home.badge)}
+                      alt=""
+                      className="w-full h-full object-contain drop-shadow-lg"
+                      loading="lazy"
+                      onError={() => handleImageError(match.teams.home.badge)}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/10 to-white/5 rounded-lg">
+                      <span className="text-[10px] font-black text-white/60 uppercase">N/A</span>
+                    </div>
+                  )}
                 </motion.div>
                 <span className="text-xs font-black text-white truncate w-full mt-2.5 tracking-wide uppercase drop-shadow-lg group-hover:text-yellow-100 transition-all duration-300">
                   {match.teams.home.name}
@@ -125,13 +136,19 @@ const SportMatchCard = ({ match, className }: SportMatchCardProps) => {
                   animate={isHovered ? { y: -6, boxShadow: `0 12px 30px rgba(255,255,255,0.3)` } : { y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <img
-                    src={getTeamBadgeUrl(match.teams.away.badge)}
-                    alt=""
-                    className="w-full h-full object-contain drop-shadow-lg"
-                    loading="lazy"
-                    onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
-                  />
+                  {!failedImages.has(match.teams.away.badge) ? (
+                    <img
+                      src={getTeamBadgeUrl(match.teams.away.badge)}
+                      alt=""
+                      className="w-full h-full object-contain drop-shadow-lg"
+                      loading="lazy"
+                      onError={() => handleImageError(match.teams.away.badge)}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/10 to-white/5 rounded-lg">
+                      <span className="text-[10px] font-black text-white/60 uppercase">N/A</span>
+                    </div>
+                  )}
                 </motion.div>
                 <span className="text-xs font-black text-white truncate w-full mt-2.5 tracking-wide uppercase drop-shadow-lg group-hover:text-yellow-100 transition-all duration-300">
                   {match.teams.away.name}

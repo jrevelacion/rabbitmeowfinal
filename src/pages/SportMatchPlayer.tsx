@@ -43,6 +43,11 @@ const SportMatchPlayer = () => {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isLoadingPlayer, setIsLoadingPlayer] = useState<boolean>(true);
   const [showSourceDropdown, setShowSourceDropdown] = useState<boolean>(false);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  
+  const handleImageError = React.useCallback((badgeUrl: string) => {
+    setFailedImages(prev => new Set(prev).add(badgeUrl));
+  }, []);
   
   const playerRef = useRef<HTMLDivElement>(null);
   const sourceDropdownRef = useRef<HTMLDivElement>(null);
@@ -305,24 +310,32 @@ const SportMatchPlayer = () => {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white/10 rounded-xl p-4 border border-white/20 gap-4 backdrop-blur-sm">
                         <div className="flex items-center gap-6">
                           <div className="flex items-center gap-2">
+                          {!failedImages.has(matchInfo.teams.home.badge) ? (
                             <img
                               src={`https://streamed.pk/api/images/badge/${matchInfo.teams.home.badge?.replace(/\.(webp|png|jpg|jpeg)$/i, '')}.webp`}
                               className="w-7 h-7 object-contain drop-shadow-lg"
-                              onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
+                              onError={() => handleImageError(matchInfo.teams.home.badge)}
                               alt=""
                             />
+                          ) : (
+                            <div className="w-7 h-7 flex items-center justify-center bg-white/10 rounded text-[8px] font-black text-white/50">N/A</div>
+                          )}
                             <span className="text-white font-black text-xs uppercase tracking-wider">{matchInfo.teams.home.name}</span>
                           </div>
                           
                           <span className="text-[9px] font-black text-white/60 tracking-widest">VS</span>
                           
                           <div className="flex items-center gap-2">
+                          {!failedImages.has(matchInfo.teams.away.badge) ? (
                             <img
                               src={`https://streamed.pk/api/images/badge/${matchInfo.teams.away.badge?.replace(/\.(webp|png|jpg|jpeg)$/i, '')}.webp`}
                               className="w-7 h-7 object-contain drop-shadow-lg"
-                              onError={(e) => { e.currentTarget.src = '/placeholder.svg' }}
+                              onError={() => handleImageError(matchInfo.teams.away.badge)}
                               alt=""
                             />
+                          ) : (
+                            <div className="w-7 h-7 flex items-center justify-center bg-white/10 rounded text-[8px] font-black text-white/50">N/A</div>
+                          )}
                             <span className="text-white font-black text-xs uppercase tracking-wider">{matchInfo.teams.away.name}</span>
                           </div>
                         </div>
