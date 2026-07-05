@@ -193,7 +193,20 @@ class FirebaseAuthService {
       }
     } catch (error: any) {
       console.error('Error checking username availability:', error);
-      throw new Error('Failed to check username availability: ' + (error.message || 'Unknown error'));
+      
+      let errorMessage = 'Failed to check username availability';
+      if (error.code === 'permission-denied') {
+        errorMessage = 'Permission denied: Check Firestore security rules';
+      } else if (error.code === 'not-found') {
+        errorMessage = 'Firestore database not initialized';
+      } else if (error.code === 'unavailable') {
+        errorMessage = 'Firestore service temporarily unavailable';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      console.error('Detailed error:', { code: error.code, message: error.message });
+      throw new Error(errorMessage);
     }
   }
 

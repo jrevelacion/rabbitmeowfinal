@@ -60,9 +60,10 @@ export default function Signup() {
         setUsernameError('Username already taken');
         setUsernameAvailable(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error checking username:', error);
-      setUsernameError('Error checking username availability');
+      const errorMsg = error?.message || 'Error checking username availability';
+      setUsernameError(errorMsg);
       setUsernameAvailable(null);
     } finally {
       setIsCheckingUsername(false);
