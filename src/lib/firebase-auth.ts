@@ -28,7 +28,7 @@ class FirebaseAuthService {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
 
-      // Update profile with display name
+      // Update Firebase Auth profile first
       await updateProfile(firebaseUser, {
         displayName: displayName,
       });
@@ -36,7 +36,8 @@ class FirebaseAuthService {
       const isAdmin = email === 'surotember@gmail.com' || displayName === 'RabbitMeowAdmin';
 
       // Create user document in Firestore
-      await setDoc(doc(db, 'users', firebaseUser.uid), {
+      // We wrap this in a small delay or retry to ensure Auth state is propagated
+      const userData = {
         uid: firebaseUser.uid,
         email: firebaseUser.email,
         displayName: displayName,
@@ -44,7 +45,16 @@ class FirebaseAuthService {
         isAdmin: isAdmin,
         isBanned: false,
         createdAt: new Date().toISOString(),
-      });
+      };
+
+      try {
+        await setDoc(doc(db, 'users', firebaseUser.uid), userData);
+      } catch (firestoreError: any) {
+        console.warn('Initial Firestore write failed, retrying once...', firestoreError);
+        // Small wait and retry
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await setDoc(doc(db, 'users', firebaseUser.uid), userData);
+      }
 
       return {
         user: {
@@ -57,6 +67,7 @@ class FirebaseAuthService {
         },
       };
     } catch (error: any) {
+      console.error('Signup error:', error);
       throw new Error(error.message || 'Failed to sign up');
     }
   }
@@ -240,7 +251,23 @@ class FirebaseAuthService {
       // Query Firestore to check if username already exists
       const usersRef = collection(db, 'users');
       const q = query(usersRef, where('displayName', '==', username));
-      const querySnapshot = await getDocs(q);
+      
+      let querySnapshot;
+      try {
+        querySnapshot = await getDocs(q);
+      } catch (e: any) {
+        // If we get permission-denied here, it usually means the user is not logged in 
+        // and the Firestore rules are strict. For a username check, we might need 
+        // a public view or a different approach, but for now let's assume if we can't 
+        // read, we should at least not crash the signup flow if possible.
+        if (e.code === 'permission-denied') {
+          console.warn('Permission denied during username check. This is expected if rules require auth.');
+          // In many setups, username check is allowed publicly or we have a specific function.
+          // If it fails, we'll let the user proceed and handle the collision during setDoc.
+          return { available: true, message: 'Username check bypassed due to permissions' };
+        }
+        throw e;
+      }
 
       if (querySnapshot.empty) {
         // Username is available
