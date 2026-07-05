@@ -56,12 +56,17 @@ const Hero = ({ media, className }: HeroProps) => {
   // Fetch logos when media changes
   useEffect(() => {
     const fetchLogos = async () => {
-      const updatedMedia = await Promise.all(
+      const results = await Promise.allSettled(
         media.map(async (item) => {
           const logo_path = await fetchLogo(item);
           return { ...item, logo_path };
         })
       );
+      
+      const updatedMedia = results.map((result, index) => 
+        result.status === 'fulfilled' ? result.value : { ...media[index], logo_path: undefined }
+      );
+      
       setExtendedMedia(updatedMedia);
     };
 

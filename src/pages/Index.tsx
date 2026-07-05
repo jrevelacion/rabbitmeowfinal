@@ -56,16 +56,7 @@ const Index = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [
-          trendingData,
-          popularMoviesData,
-          popularTVData,
-          topMoviesData,
-          topTVData,
-          upcomingMoviesData,
-          actionMoviesData,
-          comedySeriesData
-        ] = await Promise.all([
+        const results = await Promise.allSettled([
           getTrending(),
           getPopularMovies(),
           getPopularTVShows(),
@@ -75,6 +66,19 @@ const Index = () => {
           getActionMovies(),
           getComedySeries()
         ]);
+
+        const data = results.map(result => result.status === 'fulfilled' ? result.value : []);
+
+        const [
+          trendingData,
+          popularMoviesData,
+          popularTVData,
+          topMoviesData,
+          topTVData,
+          upcomingMoviesData,
+          actionMoviesData,
+          comedySeriesData
+        ] = data;
 
         const filteredTrendingData = trendingData.filter(
           item => item.backdrop_path
