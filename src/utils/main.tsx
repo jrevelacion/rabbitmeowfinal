@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
-import './index.css'
+import '../index.css'
 
 /* ------------------------------
    Clear browser storage ONLY when version changes
