@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Home, Film, Tv, TrendingUp, Menu, X, Keyboard, ArrowRight, History, UserCircle, LogIn, UserPlus, Volleyball } from 'lucide-react';
+import { Search, Home, Film, Tv, TrendingUp, Menu, X, Keyboard, ArrowRight, History, UserCircle, LogIn, UserPlus, Volleyball, Heart } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks';
 import { searchMedia } from '@/utils/api';
@@ -40,6 +40,7 @@ const Navbar = () => {
     { title: 'Sports', path: '/sports', icon: <Volleyball className="h-5 w-5 mr-2" /> },
     { title: 'Trending', path: '/trending', icon: <TrendingUp className="h-5 w-5 mr-2" /> },
     { title: 'Watch History', path: '/watch-history', icon: <History className="h-5 w-5 mr-2" /> },
+    { title: 'Support/Donate', path: '/donate', icon: <Heart className="h-5 w-5 mr-2" /> },
   ];
 
   const authItems: NavItem[] = user ? [

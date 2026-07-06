@@ -27,6 +27,7 @@ import DMCANotice from "./pages/DMCANotice";
 import ContentRemoval from "./pages/ContentRemoval";
 import Sports from "./pages/Sports";
 import SportMatchPlayer from "./pages/SportMatchPlayer";
+import Donate from "./pages/Donate";
 import { useEffect } from "react";
 import ChristmasGreeting from "./components/ChristmasGreeting";
 
@@ -88,6 +89,7 @@ const AnimatedRoutes = () => {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/dmca" element={<DMCANotice />} />
         <Route path="/content-removal" element={<ContentRemoval />} />
+        <Route path="/donate" element={<Donate />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
