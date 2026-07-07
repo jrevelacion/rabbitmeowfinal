@@ -9,7 +9,7 @@ import {
   browserLocalPersistence,
 } from 'firebase/auth';
 import { auth, db } from './firebase';
-import { doc, setDoc, getDoc, updateDoc, query, where, collection, getDocs, deleteDoc, orderBy, limit as firestoreLimit, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, query, where, collection, getDocs, deleteDoc, orderBy, limit as firestoreLimit, serverTimestamp, startAfter } from 'firebase/firestore';
 
 export interface User {
   uid: string;
@@ -98,11 +98,7 @@ class FirebaseAuthService {
           createdAt: new Date().toISOString(),
         };
         await setDoc(userRef, userData);
-      } else if (isAdmin && !userData.isAdmin) {
-        // Update admin status if it's missing in Firestore
-        await updateDoc(userRef, { isAdmin: true });
-        userData.isAdmin = true;
-      }
+
 
       return {
         user: {
@@ -181,31 +177,14 @@ class FirebaseAuthService {
   onAuthStateChanged(callback: (user: User | null) => void): () => void {
     return onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const isAdmin = firebaseUser.email === 'surotember@gmail.com' || firebaseUser.displayName === 'RabbitMeowAdmin';
-        
-        try {
-          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-          const userData = userDoc.exists() ? userDoc.data() : {};
-          
-          callback({
+        callback({
             uid: firebaseUser.uid,
             email: firebaseUser.email,
             displayName: firebaseUser.displayName,
             photoURL: firebaseUser.photoURL,
-            isAdmin: isAdmin || userData.isAdmin || false,
-            isBanned: userData.isBanned || false,
-          });
-        } catch (error) {
-          console.error('Error fetching user data in onAuthStateChanged:', error);
-          callback({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            displayName: firebaseUser.displayName,
-            photoURL: firebaseUser.photoURL,
-            isAdmin: isAdmin,
+            isAdmin: firebaseUser.email === 'surotember@gmail.com' || firebaseUser.displayName === 'RabbitMeowAdmin',
             isBanned: false,
           });
-        }
       } else {
         callback(null);
       }
@@ -327,10 +306,7 @@ class FirebaseAuthService {
       const userDoc = await getDoc(userRef);
       if (userDoc.exists()) {
         const userData = userDoc.data() as User;
-        if (isAdmin && !userData.isAdmin) {
-          await updateDoc(userRef, { isAdmin: true });
-          userData.isAdmin = true;
-        }
+
         return userData;
       }
     } catch (error) {
@@ -575,27 +551,34 @@ class FirebaseAuthService {
   }
 
   // Watch History Methods (Migration to Firestore)
-  async getWatchHistory(limitCount: number = 20, offset: number = 0): Promise<{ items: any[]; hasMore: boolean }> {
+  async getWatchHistory(limitCount: number = 20, lastDocId?: string): Promise<{ items: any[]; lastDocId: string | null; hasMore: boolean }> {
     const currentUser = await this.getActiveUser();
-    if (!currentUser) return { items: [], hasMore: false };
+    if (!currentUser) return { items: [], lastDocId: null, hasMore: false };
 
     try {
       const historyRef = collection(db, 'users', currentUser.uid, 'watchHistory');
-      // For Firestore, offset is not efficient for large datasets, but for watch history it's usually fine.
-      // However, the current implementation doesn't easily support offset without startAfter.
-      // For now, we'll just fetch the first N items or use a simple approach.
-      const q = query(historyRef, orderBy('updatedAt', 'desc'), firestoreLimit(limitCount + offset));
+      let q = query(historyRef, orderBy('updatedAt', 'desc'), firestoreLimit(limitCount + 1)); // Fetch one extra to check for more
+
+      if (lastDocId) {
+        const lastDocRef = doc(db, 'users', currentUser.uid, 'watchHistory', lastDocId);
+        const lastDocSnapshot = await getDoc(lastDocRef);
+        if (lastDocSnapshot.exists()) {
+          q = query(historyRef, orderBy('updatedAt', 'desc'), startAfter(lastDocSnapshot), firestoreLimit(limitCount + 1));
+        }
+      }
+
       const querySnapshot = await getDocs(q);
-      const allItems = querySnapshot.docs.map(doc => ({
+      const items = querySnapshot.docs.slice(0, limitCount).map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
-      
-      const items = allItems.slice(offset);
-      return { items, hasMore: allItems.length === limitCount + offset };
+      const newLastDocId = querySnapshot.docs.length > limitCount ? querySnapshot.docs[limitCount - 1].id : null;
+      const hasMore = querySnapshot.docs.length > limitCount;
+
+      return { items, lastDocId: newLastDocId, hasMore };
     } catch (error) {
       console.error('Error getting watch history:', error);
-      return { items: [], hasMore: false };
+      return { items: [], lastDocId: null, hasMore: false };
     }
   }
 

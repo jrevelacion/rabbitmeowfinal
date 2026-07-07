@@ -32,7 +32,7 @@ export function WatchHistoryProvider({ children }: { children: ReactNode }) {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [offset, setOffset] = useState(0);
+  const [lastDocId, setLastDocId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const loadLocalWatchHistory = useCallback(() => {
@@ -102,8 +102,7 @@ export function WatchHistoryProvider({ children }: { children: ReactNode }) {
 
     try {
       setIsLoading(true);
-      const currentOffset = isInitial ? 0 : offset;
-      const response = await watchHistoryService.getWatchHistory(20, currentOffset);
+      const response = await watchHistoryService.getWatchHistory(20, isInitial ? null : lastDocId);
       
       const historyData = response.items.map(item => ({
         ...item,
@@ -115,9 +114,9 @@ export function WatchHistoryProvider({ children }: { children: ReactNode }) {
 
       setWatchHistory(prev => isInitial ? historyData : [...prev, ...historyData]);
       setHasMore(response.hasMore);
-      setOffset(currentOffset + response.items.length);
+      setLastDocId(response.lastDocId);
     } catch (error) {
-      console.error('Error fetching watch history:', error);
+      console.error("Error fetching watch history:", error);
       toast({
         title: "Error loading watch history",
         description: "There was a problem loading your watch history.",
@@ -126,7 +125,7 @@ export function WatchHistoryProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.uid, offset, toast, loadLocalWatchHistory]);
+  }, [user?.uid, toast, loadLocalWatchHistory, lastDocId]);
 
   const fetchFavorites = useCallback(async () => {
     if (!user) {
@@ -184,22 +183,18 @@ export function WatchHistoryProvider({ children }: { children: ReactNode }) {
     if (authLoading) return;
 
     if (user) {
-      Promise.all([
-        fetchWatchHistory(true),
-        fetchFavorites(),
-        fetchWatchlist()
-      ]).catch(error => {
-        console.error('Error fetching initial data:', error);
-      });
+      fetchWatchHistory(true);
+      fetchFavorites();
+      fetchWatchlist();
     } else {
       setWatchHistory(loadLocalWatchHistory());
       setFavorites(loadLocalFavorites());
       setWatchlist(loadLocalWatchlist());
       setHasMore(true);
-      setOffset(0);
+      setLastDocId(null);
       setIsLoading(false);
     }
-  }, [user?.uid, authLoading, fetchWatchHistory, fetchFavorites, fetchWatchlist, loadLocalWatchHistory]);
+  }, [user?.uid, authLoading, fetchFavorites, fetchWatchlist, loadLocalWatchHistory]);
 
 const addToWatchHistory = useCallback(async (
   media: Media,
@@ -219,8 +214,7 @@ const addToWatchHistory = useCallback(async (
     // FIX: Pass season and episode to the service
     await watchHistoryService.addToWatchHistory(media, position || 0, duration || 0, season, episode);
 
-    // Refresh the watch history to get the updated data from server
-    await fetchWatchHistory(true);
+
     
   } catch (error) {
     console.error('Error adding to watch history:', error);
@@ -230,7 +224,7 @@ const addToWatchHistory = useCallback(async (
       variant: "destructive"
     });
   }
-}, [user, userPreferences?.isWatchHistoryEnabled, toast, fetchWatchHistory]);
+}, [user, userPreferences?.isWatchHistoryEnabled, toast]);
 
   const updateWatchPosition = async (
     mediaId: number, 
@@ -544,7 +538,7 @@ const addToWatchHistory = useCallback(async (
       watchlist,
       hasMore,
       isLoading,
-      loadMore: () => fetchWatchHistory(false),
+      loadMore: () => fetchWatchHistory(false, lastDocId),
       addToWatchHistory,
       updateWatchPosition,
       clearWatchHistory,
